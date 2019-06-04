@@ -187,6 +187,46 @@ namespace Pulsar4X.Tests
             Assert.IsFalse(hasFlour);
         }
 
+        [Test]
+        public void IfAnIndustryHasInsufficientStockpileToCoverItsConsumptionThenItShouldProduceAnythingAndNotConsumeAnything()
+        {
+            var cookies = SetupCookieTradeGood();
+            var flour = SetupFlourTradeGood();
+
+            var tradeGoodsDefinitions = new Dictionary<Guid, TradeGoodSD>
+            {
+                { cookies.ID, cookies },
+                { flour.ID, flour }
+            };
+
+            var cookieBakeries = SetupCookiesFromFlourIndustry(cookies, flour);
+
+            var cookieSector = new IndustrySector(cookieBakeries);
+
+            var cookiePile = new CargoStorageDB();
+            cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            cookiePile.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+
+            var cookieCheck = new Dictionary<ICargoable, int>
+            {
+                { cookies, 1800 }
+            };
+
+            var industry = new IndustryProcessor(tradeGoodsDefinitions);
+
+            StorageSpaceProcessor.AddCargo(cookiePile, flour, 1);
+            industry.ProcessIndustrySector(cookieSector, cookiePile);
+
+            var hasCookies = StorageSpaceProcessor.HasReqiredItems(cookiePile, cookieCheck);
+            Assert.IsFalse(hasCookies);
+
+            var flourCheck = new Dictionary<ICargoable, int>
+            {
+                { flour, 1 }
+            };
+            var hasFlour = StorageSpaceProcessor.HasReqiredItems(cookiePile, flourCheck);
+            Assert.IsTrue(hasFlour);
+        }
 
         private TradeGoodSD SetupCookieTradeGood()
         {
@@ -204,14 +244,18 @@ namespace Pulsar4X.Tests
 
         private IndustrySD SetupCookieClickeryIndustry(TradeGoodSD cookies)
         {
+            var recipeResult = new BatchTradeGoods();
+            recipeResult.AddTradeGood(cookies, 1);
+
+            var clickedCookieRecipe = new BatchRecipe(new BatchTradeGoods(), recipeResult);
+
             var cookieClickery = new IndustrySD
             {
                 Name = "Cookie Clickery",
                 Description = "It is like a bakery, but with less flour and more eldritch horrors.",
                 ID = Guid.NewGuid(),
-                Output = new BatchTradeGoods()
+                BatchRecipe = clickedCookieRecipe
             };
-            cookieClickery.Output.AddTradeGood(cookies, 1);
 
             return cookieClickery;
         }
@@ -232,16 +276,21 @@ namespace Pulsar4X.Tests
 
         private IndustrySD SetupCookiesFromFlourIndustry(TradeGoodSD cookies, TradeGoodSD flour)
         {
+            var recipeCost = new BatchTradeGoods();
+            recipeCost.AddTradeGood(flour, 2);
+
+            var recipeResult = new BatchTradeGoods();
+            recipeResult.AddTradeGood(cookies, 1800);
+
+            var bakedCookieRecipe = new BatchRecipe(recipeCost, recipeResult);
+
             var bakery = new IndustrySD
             {
                 Name = "Cookie Bakery",
                 Description = "It is like Grandma, but with less wrinkles. Uses flour and spit to make cookies.",
                 ID = Guid.NewGuid(),
-                Input = new BatchTradeGoods(),
-                Output = new BatchTradeGoods()
+                BatchRecipe = bakedCookieRecipe
             };
-            bakery.Input.AddTradeGood(flour, 2);
-            bakery.Output.AddTradeGood(cookies, 1800);
 
             return bakery;
         }
