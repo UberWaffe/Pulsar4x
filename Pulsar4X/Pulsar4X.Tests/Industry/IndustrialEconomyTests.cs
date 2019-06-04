@@ -40,6 +40,18 @@ namespace Pulsar4X.Tests
         }
 
         [Test]
+        public void BatchesShouldTreatNegativeAmountsAsPositive()
+        {
+            var theBatch = new BatchTradeGoods();
+            var cookies = SetupCookieTradeGood();
+
+            theBatch.AddTradeGood(cookies, -999);
+            var cookieCount = theBatch.FullItems[cookies.ID];
+
+            Assert.AreEqual(cookieCount, 999);
+        }
+
+        [Test]
         public void ForACargoHasRequiredItemCheckTheResultShouldBeFalseIfItDoesnotContainTheTargetCargoType()
         {
             var cookies = SetupCookieTradeGood();
