@@ -10,6 +10,7 @@ namespace Pulsar4X.ECSLib
         public string Description;
         public Guid ID;
 
+        public BatchTradeGoods Input;
         public BatchTradeGoods Output;
     }
 }
