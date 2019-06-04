@@ -21,7 +21,7 @@ namespace Pulsar4X.ECSLib
             foreach (var goodEntry in productionResult.FullItems)
             {
                 var good = _tradeGoodsDefinitions[goodEntry.Key];
-                var freeCapacity = stockpile.StoredCargoTypes[good.CargoTypeID].FreeCapacityKg;
+                var freeCapacity = StorageSpaceProcessor.GetFreeCapacity(stockpile, good);
                 var actualAmountToAdd = Math.Min(goodEntry.Value, freeCapacity);
 
                 StorageSpaceProcessor.AddCargo(stockpile, good, actualAmountToAdd);

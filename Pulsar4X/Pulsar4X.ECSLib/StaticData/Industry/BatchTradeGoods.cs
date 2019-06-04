@@ -14,6 +14,11 @@ namespace Pulsar4X.ECSLib
 
         public void AddTradeGood(TradeGoodSD theGood, long amount)
         {
+            if (FullItems.ContainsKey(theGood.ID) == false)
+            {
+                FullItems[theGood.ID] = 0;
+            }
+
             FullItems[theGood.ID] += Math.Abs(amount);
         }
     }
