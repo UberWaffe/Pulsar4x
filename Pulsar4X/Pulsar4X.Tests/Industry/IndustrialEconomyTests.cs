@@ -99,33 +99,27 @@ namespace Pulsar4X.Tests
             hasCookies = StorageSpaceProcessor.HasReqiredItems(cookiePile, cookieCheck);
             Assert.IsFalse(hasCookies);
         }
+
         [Test]
         public void CivilianIndustryShouldBeAbleToProduceTradeGoods()
         {
             var tradeGoodsDefinitions = new Dictionary<Guid, TradeGoodSD>();
 
-            var cookies = new TradeGoodSD();
-            cookies.Name = "Cookies";
-            cookies.Description = "Tastes like carpal tunnel and time.";
-            cookies.ID = Guid.NewGuid();
-            cookies.CargoTypeID = Guid.NewGuid();
-            cookies.Mass = 1;
+            var cookies = SetupCookieTradeGood();
 
             tradeGoodsDefinitions.Add(cookies.ID, cookies);
 
-            var cookieClickery = new IndustrySD();
-            cookieClickery.Name = "Cookie Clickery";
-            cookieClickery.Description = "It is like a bakery, but with less flour and more eldritch horrors.";
-            cookieClickery.ID = Guid.NewGuid();
-            cookieClickery.Output = new BatchTradeGoods();
-            cookieClickery.Output.AddTradeGood(cookies, 1);
+            var cookieClickery = SetupCookieClickeryIndustry(cookies);
 
             var cookieSector = new IndustrySector(cookieClickery);
 
             var cookiePile = new CargoStorageDB();
+            cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
 
-            var cookieCheck = new Dictionary<ICargoable, int>();
-            cookieCheck.Add(cookies, 1);
+            var cookieCheck = new Dictionary<ICargoable, int>
+            {
+                { cookies, 1 }
+            };
 
             var hasCookies = StorageSpaceProcessor.HasReqiredItems(cookiePile, cookieCheck);
 

@@ -50,7 +50,15 @@ namespace Pulsar4X.ECSLib
         {
             return storeDB.StoredCargoTypes[item.CargoTypeID].ItemsAndAmounts[item.ID];
         }
-        
+
+        public static long GetFreeCapacity(CargoStorageDB storeDB, ICargoable item)
+        {
+            if (storeDB.StoredCargoTypes.ContainsKey(item.CargoTypeID) == false)
+                return 0;
+
+            return storeDB.StoredCargoTypes[item.CargoTypeID].FreeCapacityKg;
+        }
+
         /// <summary>
         /// must be mins or mats DOES NOT CHECK Availiblity
         /// will throw normal dictionary exceptions.
@@ -85,7 +93,6 @@ namespace Pulsar4X.ECSLib
             //FreeCapacity is *MASS*
             storeDB.StoredCargoTypes[item.CargoTypeID].FreeCapacityKg += item.Mass * amount; 
         }
-
 
         internal static void AddCargo(CargoStorageDB storeDB, ICargoable item, long amount)
         {
@@ -150,7 +157,6 @@ namespace Pulsar4X.ECSLib
                 i++;
             }
         }
-
 
         internal static void ReCalcCapacity(Entity parentEntity)
         {
@@ -259,7 +265,6 @@ namespace Pulsar4X.ECSLib
                 storeDB.StoredCargoTypes[cargoDefinition.CargoTypeID].FreeCapacityKg / cargoDefinition.Mass,
                 storeDB.StoredCargoTypes[cargoDefinition.CargoTypeID].FreeCapacityKg);
         }
-
     }
 
 }
