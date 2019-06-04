@@ -16,7 +16,14 @@ namespace Pulsar4X.ECSLib
 
         public void ProcessIndustrySector(IndustrySector theSector, CargoStorageDB stockpile)
         {
+            var consumptionResult = theSector.ConsumptionResult();
             var productionResult = theSector.ProductionResult();
+
+            foreach (var goodEntry in consumptionResult.FullItems)
+            {
+                var good = _tradeGoodsDefinitions[goodEntry.Key];
+                StorageSpaceProcessor.RemoveCargo(stockpile, good, goodEntry.Value);
+            }
 
             foreach (var goodEntry in productionResult.FullItems)
             {

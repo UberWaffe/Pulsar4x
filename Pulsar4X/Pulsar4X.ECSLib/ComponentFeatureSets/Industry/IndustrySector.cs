@@ -15,6 +15,11 @@ namespace Pulsar4X.ECSLib
             _data = instance;
         }
 
+        public BatchTradeGoods ConsumptionResult()
+        {
+            return _data.Input;
+        }
+
         public BatchTradeGoods ProductionResult()
         {
             return _data.Output;
