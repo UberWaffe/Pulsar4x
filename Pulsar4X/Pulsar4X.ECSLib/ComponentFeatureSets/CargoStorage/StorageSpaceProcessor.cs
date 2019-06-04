@@ -101,7 +101,8 @@ namespace Pulsar4X.ECSLib
             }
             if(!storeDB.StoredCargoTypes.ContainsKey(item.CargoTypeID))
                 storeDB.StoredCargoTypes.Add(item.CargoTypeID, new CargoTypeStore());
-            else if(!storeDB.StoredCargoTypes[item.CargoTypeID].ItemsAndAmounts.ContainsKey(item.ID))
+
+            if(!storeDB.StoredCargoTypes[item.CargoTypeID].ItemsAndAmounts.ContainsKey(item.ID))
                 storeDB.StoredCargoTypes[item.CargoTypeID].ItemsAndAmounts.Add(item.ID, 0);
             
             storeDB.StoredCargoTypes[item.CargoTypeID].ItemsAndAmounts[item.ID] += amount;
