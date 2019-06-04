@@ -14,18 +14,17 @@ namespace Pulsar4X.ECSLib
         {
             _data = instance;
 
-            if (_data.Input == null) _data.Input = new BatchTradeGoods();
-            if (_data.Output == null) _data.Output = new BatchTradeGoods();
+            if (_data.BatchRecipe == null) _data.BatchRecipe = new BatchRecipe();
         }
 
         public BatchTradeGoods ConsumptionResult()
         {
-            return _data.Input;
+            return _data.BatchRecipe.InputGoods;
         }
 
         public BatchTradeGoods ProductionResult()
         {
-            return _data.Output;
+            return _data.BatchRecipe.ResultGoods;
         }
     }
 

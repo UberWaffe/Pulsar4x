@@ -5,14 +5,14 @@ namespace Pulsar4X.ECSLib
 {
     public class BatchTradeGoods
     {
-        public Dictionary<Guid, long> FullItems { get; } = new Dictionary<Guid, long>();
+        public Dictionary<Guid, int> FullItems { get; } = new Dictionary<Guid, int>();
 
         public BatchTradeGoods()
         {
-            FullItems = new Dictionary<Guid, long>();
+            FullItems = new Dictionary<Guid, int>();
         }
 
-        public void AddTradeGood(TradeGoodSD theGood, long amount)
+        public void AddTradeGood(TradeGoodSD theGood, int amount)
         {
             if (FullItems.ContainsKey(theGood.ID) == false)
             {

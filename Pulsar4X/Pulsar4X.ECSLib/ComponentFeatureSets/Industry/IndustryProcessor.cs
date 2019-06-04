@@ -17,7 +17,17 @@ namespace Pulsar4X.ECSLib
         public void ProcessIndustrySector(IndustrySector theSector, CargoStorageDB stockpile)
         {
             var consumptionResult = theSector.ConsumptionResult();
-            var productionResult = theSector.ProductionResult();
+            var consumptionGoodsList = new Dictionary<ICargoable, int>();
+
+            foreach (var goodEntry in consumptionResult.FullItems)
+            {
+                var good = _tradeGoodsDefinitions[goodEntry.Key];
+                consumptionGoodsList.Add(good, goodEntry.Value);
+            }
+
+            var hasAllRequiredConsumption = StorageSpaceProcessor.HasReqiredItems(stockpile, consumptionGoodsList);
+            if (hasAllRequiredConsumption == false)
+                return;
 
             foreach (var goodEntry in consumptionResult.FullItems)
             {
@@ -25,6 +35,7 @@ namespace Pulsar4X.ECSLib
                 StorageSpaceProcessor.RemoveCargo(stockpile, good, goodEntry.Value);
             }
 
+            var productionResult = theSector.ProductionResult();
             foreach (var goodEntry in productionResult.FullItems)
             {
                 var good = _tradeGoodsDefinitions[goodEntry.Key];
