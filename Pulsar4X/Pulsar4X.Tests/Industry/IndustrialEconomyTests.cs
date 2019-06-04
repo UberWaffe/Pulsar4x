@@ -115,5 +115,33 @@ namespace Pulsar4X.Tests
             Assert.IsTrue(hasCookies);
         }
 
+
+        private TradeGoodSD SetupCookieTradeGood()
+        {
+            var cookies = new TradeGoodSD
+            {
+                Name = "Cookies",
+                Description = "Tastes like carpal tunnel and time.",
+                ID = Guid.NewGuid(),
+                CargoTypeID = Guid.NewGuid(),
+                Mass = 1
+            };
+
+            return cookies;
+        }
+
+        private IndustrySD SetupCookieClickeryIndustry(TradeGoodSD cookies)
+        {
+            var cookieClickery = new IndustrySD
+            {
+                Name = "Cookie Clickery",
+                Description = "It is like a bakery, but with less flour and more eldritch horrors.",
+                ID = Guid.NewGuid(),
+                Output = new BatchTradeGoods()
+            };
+            cookieClickery.Output.AddTradeGood(cookies, 1);
+
+            return cookieClickery;
+        }
     }
 }
