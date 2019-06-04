@@ -40,6 +40,22 @@ namespace Pulsar4X.Tests
         }
 
         [Test]
+        public void ForACargoHasRequiredItemCheckTheResultShouldBeFalseIfItDoesnotContainTheTargetCargoType()
+        {
+            var cookies = SetupCookieTradeGood();
+
+            var cookiePile = new CargoStorageDB();
+
+            var cookieCheck = new Dictionary<ICargoable, int>
+            {
+                { cookies, 1 }
+            };
+
+            var hasCookies = StorageSpaceProcessor.HasReqiredItems(cookiePile, cookieCheck);
+
+            Assert.IsFalse(hasCookies);
+        }
+        [Test]
         public void CivilianIndustryShouldBeAbleToProduceTradeGoods()
         {
             var tradeGoodsDefinitions = new Dictionary<Guid, TradeGoodSD>();
