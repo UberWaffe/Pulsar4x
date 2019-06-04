@@ -13,6 +13,9 @@ namespace Pulsar4X.ECSLib
         public IndustrySector(IndustrySD instance)
         {
             _data = instance;
+
+            if (_data.Input == null) _data.Input = new BatchTradeGoods();
+            if (_data.Output == null) _data.Output = new BatchTradeGoods();
         }
 
         public BatchTradeGoods ConsumptionResult()
