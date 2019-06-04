@@ -62,6 +62,12 @@ namespace Pulsar4X.ECSLib
         public Dictionary<Guid, CargoTypeSD> CargoTypes = new Dictionary<Guid, CargoTypeSD>();
 
         /// <summary>
+        /// Dictionary which stores all the Trade Goods.
+        /// </summary>
+        [JsonIgnore]
+        public Dictionary<Guid, TradeGoodSD> TradeGoods = new Dictionary<Guid, TradeGoodSD>();
+
+        /// <summary>
         /// Settings used by system generation. 
         /// @todo make Galaxy gen use this instead of default data (DO NOT DELETE THE HARD CODED DATA THO, that should be a fall back).
         /// </summary>
