@@ -10,9 +10,12 @@ namespace Pulsar4X.ECSLib
     {
         private IndustrySD _data;
 
-        public IndustrySector(IndustrySD instance)
+        public long NumberOfIndustry { get; private set; }
+
+        public IndustrySector(IndustrySD instance, long size = 0)
         {
             _data = instance;
+            NumberOfIndustry = size;
 
             if (_data.BatchRecipe == null) _data.BatchRecipe = new BatchRecipe();
         }
@@ -25,6 +28,11 @@ namespace Pulsar4X.ECSLib
         public BatchTradeGoods ProductionResult()
         {
             return _data.BatchRecipe.ResultGoods;
+        }
+
+        public void ChangeSectorSize(long newSize)
+        {
+            NumberOfIndustry = newSize;
         }
     }
 

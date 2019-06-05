@@ -41,6 +41,29 @@ namespace Pulsar4X.ECSLib
             return true;
         }
 
+        public static bool HasRequiredItems(CargoStorageDB stockpile, Dictionary<ICargoable, long> costs)
+        {
+            if (costs == null)
+                return true;
+            else
+            {
+                foreach (var costitem in costs)
+                {
+                    if (costitem.Value > 0)
+                    {
+                        if (stockpile.StoredCargoTypes.ContainsKey(costitem.Key.CargoTypeID) == false)
+                            return false;
+                        if (stockpile.StoredCargoTypes[costitem.Key.CargoTypeID].ItemsAndAmounts.ContainsKey(costitem.Key.ID) == false)
+                            return false;
+                    }
+
+                    if (costitem.Value > stockpile.StoredCargoTypes[costitem.Key.CargoTypeID].ItemsAndAmounts[costitem.Key.ID])
+                        return false;
+                }
+            }
+            return true;
+        }
+
         public static long GetAmount(CargoStorageDB storeDB, Guid storeTypeGuid, Guid itemGuid)
         {
             return storeDB.StoredCargoTypes[storeTypeGuid].ItemsAndAmounts[itemGuid];
