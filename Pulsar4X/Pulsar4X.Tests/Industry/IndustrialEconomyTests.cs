@@ -63,7 +63,7 @@ namespace Pulsar4X.Tests
                 { cookies, 1 }
             };
 
-            var hasCookies = StorageSpaceProcessor.HasReqiredItems(cookiePile, cookieCheck);
+            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
 
             Assert.IsFalse(hasCookies);
         }
@@ -83,7 +83,7 @@ namespace Pulsar4X.Tests
                 { cookies, 1 }
             };
 
-            var hasCookies = StorageSpaceProcessor.HasReqiredItems(cookiePile, cookieCheck);
+            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
 
             Assert.IsFalse(hasCookies);
         }
@@ -100,15 +100,15 @@ namespace Pulsar4X.Tests
             {
                 { cookies, 6 }
             };
-            var hasCookies = StorageSpaceProcessor.HasReqiredItems(cookiePile, cookieCheck);
+            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
             Assert.IsTrue(hasCookies);
 
             cookieCheck[cookies] = 7;
-            hasCookies = StorageSpaceProcessor.HasReqiredItems(cookiePile, cookieCheck);
+            hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
             Assert.IsTrue(hasCookies);
 
             cookieCheck[cookies] = 8;
-            hasCookies = StorageSpaceProcessor.HasReqiredItems(cookiePile, cookieCheck);
+            hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
             Assert.IsFalse(hasCookies);
         }
 
@@ -134,14 +134,14 @@ namespace Pulsar4X.Tests
                 { cookies, 1 }
             };
 
-            var hasCookies = StorageSpaceProcessor.HasReqiredItems(cookiePile, cookieCheck);
+            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
 
             Assert.IsFalse(hasCookies);
 
             var industry = new IndustryProcessor(tradeGoodsDefinitions);
             industry.ProcessIndustrySector(cookieSector, cookiePile);
 
-            hasCookies = StorageSpaceProcessor.HasReqiredItems(cookiePile, cookieCheck);
+            hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
 
             Assert.IsTrue(hasCookies);
         }
@@ -176,14 +176,14 @@ namespace Pulsar4X.Tests
             StorageSpaceProcessor.AddCargo(cookiePile, flour, 2);
             industry.ProcessIndustrySector(cookieSector, cookiePile);
 
-            var hasCookies = StorageSpaceProcessor.HasReqiredItems(cookiePile, cookieCheck);
+            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
             Assert.IsTrue(hasCookies);
 
             var flourCheck = new Dictionary<ICargoable, int>
             {
                 { flour, 1 }
             };
-            var hasFlour = StorageSpaceProcessor.HasReqiredItems(cookiePile, flourCheck);
+            var hasFlour = StorageSpaceProcessor.HasRequiredItems(cookiePile, flourCheck);
             Assert.IsFalse(hasFlour);
         }
 
@@ -217,15 +217,98 @@ namespace Pulsar4X.Tests
             StorageSpaceProcessor.AddCargo(cookiePile, flour, 1);
             industry.ProcessIndustrySector(cookieSector, cookiePile);
 
-            var hasCookies = StorageSpaceProcessor.HasReqiredItems(cookiePile, cookieCheck);
+            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
             Assert.IsFalse(hasCookies);
 
             var flourCheck = new Dictionary<ICargoable, int>
             {
                 { flour, 1 }
             };
-            var hasFlour = StorageSpaceProcessor.HasReqiredItems(cookiePile, flourCheck);
+            var hasFlour = StorageSpaceProcessor.HasRequiredItems(cookiePile, flourCheck);
             Assert.IsTrue(hasFlour);
+        }
+
+        [Test]
+        public void MultipleCountsOfTheSameIndustryShouldIncreaseTotalProductionInThatSector()
+        {
+            var cookies = SetupCookieTradeGood();
+            var flour = SetupFlourTradeGood();
+
+            var tradeGoodsDefinitions = new Dictionary<Guid, TradeGoodSD>
+            {
+                { cookies.ID, cookies },
+                { flour.ID, flour }
+            };
+
+            var cookieBakeries = SetupCookiesFromFlourIndustry(cookies, flour);
+
+            var cookieSector = new IndustrySector(cookieBakeries, 100);
+
+            var cookiePile = new CargoStorageDB();
+            cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            cookiePile.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+
+            var cookieCheck = new Dictionary<ICargoable, int>
+            {
+                { cookies, 180000 }
+            };
+
+            var industry = new IndustryProcessor(tradeGoodsDefinitions);
+
+            StorageSpaceProcessor.AddCargo(cookiePile, flour, 200);
+            industry.ProcessIndustrySector(cookieSector, cookiePile);
+
+            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
+            Assert.IsTrue(hasCookies);
+
+            var flourCheck = new Dictionary<ICargoable, int>
+            {
+                { flour, 1 }
+            };
+            var hasFlour = StorageSpaceProcessor.HasRequiredItems(cookiePile, flourCheck);
+            Assert.IsFalse(hasFlour);
+        }
+
+        [Test]
+        public void AnIndustryShouldNotTryAndProduceMoreThanThereIsSpaceToReceiveInTheTargetStorage()
+        {
+            Assert.Fail();
+        }
+
+        [Test]
+        public void IfInsufficientRequiredResourcesIsAvailableThenAnIndustrySectorShouldAttemptToProduceAsMuchAsPossible()
+        {
+            Assert.Fail();
+        }
+
+        [Test]
+        public void AnIndustryShouldBeAbleToProcessABatchesMultipleTimesIfItHasEnoughWorkCapacityAvailable()
+        {
+            Assert.Fail();
+        }
+
+        [Test]
+        public void AnIndustryShouldBeAbleToProcessMultipleDifferentRecipesIfItHasEnoughWorkCapacityAvailable()
+        {
+            Assert.Fail();
+        }
+
+        [Test]
+        public void ABatchRecipeShouldBeAbleToOutputServices()
+        {
+            Assert.Fail();
+        }
+
+        [Test]
+        public void ABatchRecipeShouldBeAbleToConsumeServices()
+        {
+            Assert.Fail();
+        }
+
+        [Test]
+        public void AnEntityShouldBeAbleToHaveMultipleIndustrySectorsThatAllWorkTogetherToProduceASingleNetResult()
+        {
+            Assert.Fail();
         }
 
         private TradeGoodSD SetupCookieTradeGood()

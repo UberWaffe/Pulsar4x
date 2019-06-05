@@ -17,30 +17,37 @@ namespace Pulsar4X.ECSLib
         public void ProcessIndustrySector(IndustrySector theSector, CargoStorageDB stockpile)
         {
             var consumptionResult = theSector.ConsumptionResult();
-            var consumptionGoodsList = new Dictionary<ICargoable, int>();
+            var consumptionGoodsList = new Dictionary<ICargoable, long>();
+            var batchCount = theSector.NumberOfIndustry;
 
             foreach (var goodEntry in consumptionResult.FullItems)
             {
                 var good = _tradeGoodsDefinitions[goodEntry.Key];
-                consumptionGoodsList.Add(good, goodEntry.Value);
+                var finalRequiredAmount = goodEntry.Value * batchCount;
+
+                consumptionGoodsList.Add(good, finalRequiredAmount);
             }
 
-            var hasAllRequiredConsumption = StorageSpaceProcessor.HasReqiredItems(stockpile, consumptionGoodsList);
+            var hasAllRequiredConsumption = StorageSpaceProcessor.HasRequiredItems(stockpile, consumptionGoodsList);
             if (hasAllRequiredConsumption == false)
                 return;
 
             foreach (var goodEntry in consumptionResult.FullItems)
             {
                 var good = _tradeGoodsDefinitions[goodEntry.Key];
-                StorageSpaceProcessor.RemoveCargo(stockpile, good, goodEntry.Value);
+                var finalRequiredAmount = goodEntry.Value * batchCount;
+
+                StorageSpaceProcessor.RemoveCargo(stockpile, good, finalRequiredAmount);
             }
 
             var productionResult = theSector.ProductionResult();
             foreach (var goodEntry in productionResult.FullItems)
             {
                 var good = _tradeGoodsDefinitions[goodEntry.Key];
+                var finalRequiredAmount = goodEntry.Value * batchCount;
+
                 var freeCapacity = StorageSpaceProcessor.GetFreeCapacity(stockpile, good);
-                var actualAmountToAdd = Math.Min(goodEntry.Value, freeCapacity);
+                var actualAmountToAdd = Math.Min(finalRequiredAmount, freeCapacity);
 
                 StorageSpaceProcessor.AddCargo(stockpile, good, actualAmountToAdd);
             }
