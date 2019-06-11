@@ -342,9 +342,48 @@ namespace Pulsar4X.Tests
         }
 
         [Test]
-        public void TradeGoodLibraryShouldThrowExceptionWhenFetchingSomethingThatItDoesNotContain()
+        public void TradeGoodLibrary_OnGetByName_InvalidEntry_Should_ThrowException()
         {
-            Assert.Fail();
+            var flour = SetupFlourTradeGood();
+            var tradeGoodsDefinitions = new TradeGoodLibrary(new List<TradeGoodSD>() { flour });
+
+            Assert.Throws<Exception>(() => tradeGoodsDefinitions.Get("This trade good doesn't exist"));
+        }
+
+        [Test]
+        public void TradeGoodLibrary_OnGetByGuid_InvalidEntry_Should_ThrowException()
+        {
+            var flour = SetupFlourTradeGood();
+            var tradeGoodsDefinitions = new TradeGoodLibrary(new List<TradeGoodSD>() { flour });
+
+            Assert.Throws<Exception>(() => tradeGoodsDefinitions.Get(Guid.NewGuid()));
+        }
+
+        [Test]
+        public void IndustryLibrary_OnGetByName_InvalidEntry_Should_ThrowException()
+        {
+            var theGoods = SetupStandardTradeGoods();
+            var industryLibrary = SetupStandardIndustries(theGoods);
+
+            Assert.Throws<Exception>(() => industryLibrary.Get("No such industry"));
+        }
+
+        [Test]
+        public void IndustryLibrary_OnGetByGuid_InvalidEntry_Should_ThrowException()
+        {
+            var theGoods = SetupStandardTradeGoods();
+            var industryLibrary = SetupStandardIndustries(theGoods);
+
+            Assert.Throws<Exception>(() => industryLibrary.Get(Guid.NewGuid()));
+        }
+
+        [Test]
+        public void BatchRecipeLibrary_OnGetByName_InvalidEntry_Should_ThrowException()
+        {
+            var theGoods = SetupStandardTradeGoods();
+            var recipeLibrary = SetupStandardRecipes(theGoods);
+
+            Assert.Throws<Exception>(() => recipeLibrary.Get("This trade good doesn't exist"));
         }
 
         private TradeGoodSD SetupCookieTradeGood()
