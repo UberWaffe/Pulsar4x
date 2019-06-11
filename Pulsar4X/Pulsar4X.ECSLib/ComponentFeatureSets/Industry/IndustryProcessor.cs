@@ -34,7 +34,7 @@ namespace Pulsar4X.ECSLib
                 StorageSpaceProcessor.RemoveCargo(stockpile, good, finalRequiredAmount);
             }
 
-            var productionResult = theSector.GetOutput();
+            var productionResult = theSector.GetOutput(maximumRecipeBatchesToProcess);
             foreach (var goodEntry in productionResult.FullItems)
             {
                 var good = tradeGoodsLibrary.Get(goodEntry.Key);
@@ -58,6 +58,32 @@ namespace Pulsar4X.ECSLib
         }
 
         private static long CalculateMaximumBatchesPossible(IndustrySector theSector, CargoStorageDB stockpile, TradeGoodLibrary tradeGoodsLibrary)
+        {
+            var finalBatchesCount = CalculateMaximumBatchesPossibleWithOutputStorage(theSector, stockpile, tradeGoodsLibrary);
+            finalBatchesCount = Math.Min(finalBatchesCount, CalculateMaximumBatchesPossibleWithInputStockpiles(theSector, stockpile, tradeGoodsLibrary));
+            
+            return finalBatchesCount;
+        }
+
+        private static long CalculateMaximumBatchesPossibleWithInputStockpiles(IndustrySector theSector, CargoStorageDB stockpile, TradeGoodLibrary tradeGoodsLibrary)
+        {
+            var finalBatchesCount = theSector.NumberOfIndustry;
+
+            var consumptionRequirementsOfOneBatch = theSector.GetInput(1);
+            foreach (var goodEntry in consumptionRequirementsOfOneBatch.FullItems)
+            {
+                var good = tradeGoodsLibrary.Get(goodEntry.Key);
+                var amountNeeded = goodEntry.Value;
+
+                var stockpiledAmount = StorageSpaceProcessor.GetAmount(stockpile, good.CargoTypeID, good.ID);
+                var countOfBatchesWorthOfStockpile = stockpiledAmount / amountNeeded;
+
+                finalBatchesCount = Math.Min(finalBatchesCount, countOfBatchesWorthOfStockpile);
+            }
+            return finalBatchesCount;
+        }
+
+        private static long CalculateMaximumBatchesPossibleWithOutputStorage(IndustrySector theSector, CargoStorageDB stockpile, TradeGoodLibrary tradeGoodsLibrary)
         {
             var finalBatchesCount = theSector.NumberOfIndustry;
 
