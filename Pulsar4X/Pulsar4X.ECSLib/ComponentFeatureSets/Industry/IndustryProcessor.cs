@@ -5,25 +5,17 @@ using System.Linq;
 
 namespace Pulsar4X.ECSLib
 {
-    internal class IndustryProcessor
+    internal static class IndustryProcessor
     {
-        private Dictionary<Guid, TradeGoodSD> _tradeGoodsDefinitions;
-
-        public IndustryProcessor(Dictionary<Guid, TradeGoodSD> tradeGoods)
+        public static void ProcessIndustrySector(IndustrySector theSector, CargoStorageDB stockpile, TradeGoodLibrary tradeGoodsLibrary)
         {
-            _tradeGoodsDefinitions = tradeGoods;
-        }
-
-        public void ProcessIndustrySector(IndustrySector theSector, CargoStorageDB stockpile)
-        {
-            var consumptionResult = theSector.ConsumptionResult();
+            var consumptionResult = theSector.GetInput();
             var consumptionGoodsList = new Dictionary<ICargoable, long>();
-            var batchCount = theSector.NumberOfIndustry;
 
             foreach (var goodEntry in consumptionResult.FullItems)
             {
-                var good = _tradeGoodsDefinitions[goodEntry.Key];
-                var finalRequiredAmount = goodEntry.Value * batchCount;
+                var good = tradeGoodsLibrary.Get(goodEntry.Key);
+                var finalRequiredAmount = goodEntry.Value;
 
                 consumptionGoodsList.Add(good, finalRequiredAmount);
             }
@@ -34,22 +26,32 @@ namespace Pulsar4X.ECSLib
 
             foreach (var goodEntry in consumptionResult.FullItems)
             {
-                var good = _tradeGoodsDefinitions[goodEntry.Key];
-                var finalRequiredAmount = goodEntry.Value * batchCount;
+                var good = tradeGoodsLibrary.Get(goodEntry.Key);
+                var finalRequiredAmount = goodEntry.Value;
 
                 StorageSpaceProcessor.RemoveCargo(stockpile, good, finalRequiredAmount);
             }
 
-            var productionResult = theSector.ProductionResult();
+            var productionResult = theSector.GetOutput();
             foreach (var goodEntry in productionResult.FullItems)
             {
-                var good = _tradeGoodsDefinitions[goodEntry.Key];
-                var finalRequiredAmount = goodEntry.Value * batchCount;
+                var good = tradeGoodsLibrary.Get(goodEntry.Key);
+                var finalRequiredAmount = goodEntry.Value;
 
                 var freeCapacity = StorageSpaceProcessor.GetFreeCapacity(stockpile, good);
                 var actualAmountToAdd = Math.Min(finalRequiredAmount, freeCapacity);
 
                 StorageSpaceProcessor.AddCargo(stockpile, good, actualAmountToAdd);
+            }
+        }
+
+        public static void ProcessAllIndustrySectors(IndustryAllSectors theEconomy, CargoStorageDB stockpile, TradeGoodLibrary tradeGoodsLibrary)
+        {
+            var orderedList = theEconomy.GetSectorsInOrderOfDescendingPriority();
+
+            foreach (var sector in orderedList)
+            {
+                ProcessIndustrySector(sector, stockpile, tradeGoodsLibrary);
             }
         }
     }
