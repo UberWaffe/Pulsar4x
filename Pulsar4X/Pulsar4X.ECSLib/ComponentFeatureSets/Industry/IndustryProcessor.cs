@@ -9,7 +9,9 @@ namespace Pulsar4X.ECSLib
     {
         public static void ProcessIndustrySector(IndustrySector theSector, CargoStorageDB stockpile, TradeGoodLibrary tradeGoodsLibrary)
         {
-            var consumptionResult = theSector.GetInput();
+            var maximumRecipeBatchesToProcess = CalculateMaximumBatchesPossible(theSector, stockpile, tradeGoodsLibrary);
+
+            var consumptionResult = theSector.GetInput(maximumRecipeBatchesToProcess);
             var consumptionGoodsList = new Dictionary<ICargoable, long>();
 
             foreach (var goodEntry in consumptionResult.FullItems)
@@ -53,6 +55,25 @@ namespace Pulsar4X.ECSLib
             {
                 ProcessIndustrySector(sector, stockpile, tradeGoodsLibrary);
             }
+        }
+
+        private static long CalculateMaximumBatchesPossible(IndustrySector theSector, CargoStorageDB stockpile, TradeGoodLibrary tradeGoodsLibrary)
+        {
+            var finalBatchesCount = theSector.NumberOfIndustry;
+
+            var productionResultsOfOneBatch = theSector.GetOutput(1);
+            foreach (var goodEntry in productionResultsOfOneBatch.FullItems)
+            {
+                var good = tradeGoodsLibrary.Get(goodEntry.Key);
+                var spaceNeededForThisGoodForOneBatch = goodEntry.Value;
+
+                var freeCapacity = StorageSpaceProcessor.GetFreeCapacity(stockpile, good);
+                var countOfBatchesWorthOfSpace = freeCapacity / spaceNeededForThisGoodForOneBatch;
+
+                finalBatchesCount = Math.Min(finalBatchesCount, countOfBatchesWorthOfSpace);
+            }
+
+            return finalBatchesCount;
         }
     }
 }

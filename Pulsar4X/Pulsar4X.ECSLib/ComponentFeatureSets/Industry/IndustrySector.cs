@@ -40,7 +40,12 @@ namespace Pulsar4X.ECSLib
 
         public BatchTradeGoods GetInput()
         {
-            return GetInputForCount(NumberOfIndustry);
+            return GetInput(NumberOfIndustry);
+        }
+
+        public BatchTradeGoods GetInput(long batchesToMake = 0)
+        {
+            return GetInputForCount(batchesToMake);
         }
 
         public BatchTradeGoods GetOutputForCount(long count)
@@ -53,7 +58,12 @@ namespace Pulsar4X.ECSLib
 
         public BatchTradeGoods GetOutput()
         {
-            return GetOutputForCount(NumberOfIndustry);
+            return GetOutput(NumberOfIndustry);
+        }
+
+        public BatchTradeGoods GetOutput(long batchesToMake = 0)
+        {
+            return GetOutputForCount(batchesToMake);
         }
 
         public bool IsIndustry(string name)
