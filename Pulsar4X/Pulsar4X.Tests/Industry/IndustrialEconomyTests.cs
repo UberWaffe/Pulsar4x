@@ -201,7 +201,7 @@ namespace Pulsar4X.Tests
         }
 
         [Test]
-        public void IndustryProcessor_SingleSector_When_ProcessingRecipeWithInsufficientInputs_Should_NotConsumeOrProduceAnything()
+        public void IndustryProcessor_SingleSector_When_ProcessingRecipeWithInsufficientInputsForEvenOneBatch_Should_NotConsumeOrProduceAnything()
         {
             var cookies = SetupCookieTradeGood();
             var flour = SetupFlourTradeGood();
@@ -210,7 +210,7 @@ namespace Pulsar4X.Tests
 
             var cookieBakeries = SetupCookiesFromFlourIndustry(cookies, flour);
 
-            var cookieSector = new IndustrySector(cookieBakeries);
+            var cookieSector = new IndustrySector(cookieBakeries, 1);
 
             var cookiePile = new CargoStorageDB();
             cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
@@ -233,6 +233,33 @@ namespace Pulsar4X.Tests
             };
             var hasFlour = StorageSpaceProcessor.HasRequiredItems(cookiePile, flourCheck);
             Assert.IsTrue(hasFlour);
+        }
+
+        [Test]
+        public void IndustryProcessor_SingleSector_When_ProcessingRecipeWithInsufficientInputsForAllBatches_Should_ProcessAsManyBatchesAsPossible()
+        {
+            var cookies = SetupCookieTradeGood();
+            var flour = SetupFlourTradeGood();
+
+            var tradeGoodsDefinitions = new TradeGoodLibrary(new List<TradeGoodSD>() { cookies, flour });
+
+            var cookieBakeries = SetupCookiesFromFlourIndustry(cookies, flour);
+
+            var cookieSector = new IndustrySector(cookieBakeries, 3);
+
+            var cookiePile = new CargoStorageDB();
+            cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            cookiePile.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            
+            StorageSpaceProcessor.AddCargo(cookiePile, flour, (2 * 2) + 1);
+            IndustryProcessor.ProcessIndustrySector(cookieSector, cookiePile, tradeGoodsDefinitions);
+
+            var finalHasCheck = new Dictionary<ICargoable, int>
+            {
+                { cookies, 1800 * 2 },
+                { flour, 1 }
+            };
+            Assert.IsTrue(CargoHasExactNumbers(cookiePile, finalHasCheck));
         }
 
         [Test]
@@ -365,13 +392,7 @@ namespace Pulsar4X.Tests
         {
             Assert.Fail();
         }
-
-        [Test]
-        public void IfInsufficientRequiredResourcesIsAvailableThenAnIndustrySectorShouldAttemptToProduceAsMuchAsPossible()
-        {
-            Assert.Fail();
-        }
-
+        
         [Test]
         public void AnIndustryShouldBeAbleToProcessABatchesMultipleTimesIfItHasEnoughWorkCapacityAvailable()
         {

@@ -61,7 +61,7 @@ namespace Pulsar4X.ECSLib
             return GetOutput(NumberOfIndustry);
         }
 
-        public BatchTradeGoods GetOutput(long batchesToMake = 0)
+        public BatchTradeGoods GetOutput(long batchesToMake)
         {
             return GetOutputForCount(batchesToMake);
         }
