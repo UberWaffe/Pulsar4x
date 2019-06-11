@@ -20,19 +20,45 @@ namespace Pulsar4X.ECSLib
             if (_data.BatchRecipe == null) _data.BatchRecipe = new BatchRecipe();
         }
 
-        public BatchTradeGoods ConsumptionResult()
+        public void SetCount(int count)
         {
-            return _data.BatchRecipe.InputGoods;
+            NumberOfIndustry = count;
         }
 
-        public BatchTradeGoods ProductionResult()
+        public BatchRecipe GetRecipe()
         {
-            return _data.BatchRecipe.ResultGoods;
+            return _data.BatchRecipe;
         }
 
-        public void ChangeSectorSize(long newSize)
+        public BatchTradeGoods GetInputForCount(long count)
         {
-            NumberOfIndustry = newSize;
+            var result = new BatchTradeGoods(GetRecipe().InputGoods);
+            result.MultiplyDivideBy(count, 1);
+
+            return result;
+        }
+
+        public BatchTradeGoods GetInput()
+        {
+            return GetInputForCount(NumberOfIndustry);
+        }
+
+        public BatchTradeGoods GetOutputForCount(long count)
+        {
+            var result = new BatchTradeGoods(GetRecipe().ResultGoods);
+            result.MultiplyDivideBy(count, 1);
+
+            return result;
+        }
+
+        public BatchTradeGoods GetOutput()
+        {
+            return GetOutputForCount(NumberOfIndustry);
+        }
+
+        public bool IsIndustry(string name)
+        {
+            return (_data.Name == name);
         }
     }
 
