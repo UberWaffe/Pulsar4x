@@ -159,7 +159,7 @@ namespace Pulsar4X.Tests
             var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
             Assert.IsFalse(hasCookies);
 
-            IndustryProcessor.ProcessIndustrySector(cookieSector, cookiePile, tradeGoodsDefinitions);
+            cookiePile = cookieSector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
 
             hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
             Assert.IsTrue(hasCookies);
@@ -187,7 +187,7 @@ namespace Pulsar4X.Tests
             };
             
             StorageSpaceProcessor.AddCargo(cookiePile, flour, 2);
-            IndustryProcessor.ProcessIndustrySector(cookieSector, cookiePile, tradeGoodsDefinitions);
+            cookiePile = cookieSector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
 
             var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
             Assert.IsTrue(hasCookies);
@@ -222,7 +222,7 @@ namespace Pulsar4X.Tests
             };
             
             StorageSpaceProcessor.AddCargo(cookiePile, flour, 1);
-            IndustryProcessor.ProcessIndustrySector(cookieSector, cookiePile, tradeGoodsDefinitions);
+            cookiePile = cookieSector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
 
             var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
             Assert.IsFalse(hasCookies);
@@ -252,7 +252,7 @@ namespace Pulsar4X.Tests
             cookiePile.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
             
             StorageSpaceProcessor.AddCargo(cookiePile, flour, (2 * 2) + 1);
-            IndustryProcessor.ProcessIndustrySector(cookieSector, cookiePile, tradeGoodsDefinitions);
+            cookiePile = cookieSector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
 
             var finalHasCheck = new Dictionary<ICargoable, int>
             {
@@ -284,7 +284,7 @@ namespace Pulsar4X.Tests
             };
             
             StorageSpaceProcessor.AddCargo(cookiePile, flour, 200);
-            IndustryProcessor.ProcessIndustrySector(cookieSector, cookiePile, tradeGoodsDefinitions);
+            cookiePile = cookieSector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
 
             var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
             Assert.IsTrue(hasCookies);
@@ -314,7 +314,7 @@ namespace Pulsar4X.Tests
             cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 1800 * 50, FreeCapacityKg = 1800 * 50 });
 
             StorageSpaceProcessor.AddCargo(cookiePile, flour, 2 * 100);
-            IndustryProcessor.ProcessIndustrySector(cookieSector, cookiePile, tradeGoodsDefinitions);
+            cookiePile = cookieSector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
 
             var finalHasCheck = new Dictionary<ICargoable, int>
             {
@@ -322,6 +322,62 @@ namespace Pulsar4X.Tests
                 { flour, 2 * 50 }
             };
             Assert.IsTrue(CargoHasExactNumbers(cookiePile, finalHasCheck));
+        }
+
+        [Test]
+        public void IndustryProcessor_SingleSector_When_ProcessingBatches_Should_ProcessBatchesAsManyTimesAsItHasWorkCapacityFor()
+        {
+            var cookies = SetupCookieTradeGood();
+            var flour = SetupFlourTradeGood();
+
+            var tradeGoodsDefinitions = new TradeGoodLibrary(new List<TradeGoodSD>() { cookies, flour });
+
+            var slowBakeries = SetupSlowCookiesFromFlourIndustry(cookies, flour);
+
+            var slowBakerySector = new IndustrySector(slowBakeries, 1);
+
+            var cookiePile = new CargoStorageDB();
+            cookiePile.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+
+            StorageSpaceProcessor.AddCargo(cookiePile, flour, 9999999999 );
+            cookiePile = slowBakerySector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
+
+            var finalHasCheck = new Dictionary<ICargoable, int>
+            {
+                { cookies, 2700 * 11 }
+            };
+            Assert.IsTrue(CargoHasExactNumbers(cookiePile, finalHasCheck));
+        }
+
+        [Test]
+        public void IndustryProcessor_SingleSector_When_ProcessingBatches_Should_HaveTheCorrectWorkCapacityRemainingAfterProcessingBatches()
+        {
+            var cookies = SetupCookieTradeGood();
+            var flour = SetupFlourTradeGood();
+
+            var tradeGoodsDefinitions = new TradeGoodLibrary(new List<TradeGoodSD>() { cookies, flour });
+
+            var slowBakeries = SetupSlowCookiesFromFlourIndustry(cookies, flour);
+
+            var slowBakerySector = new IndustrySector(slowBakeries, 1);
+
+            var cookiePile = new CargoStorageDB();
+            cookiePile.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+
+            StorageSpaceProcessor.AddCargo(cookiePile, flour, 9999999999);
+            cookiePile = slowBakerySector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
+
+            Assert.AreEqual(2, slowBakerySector.RemainingWorkCapacity);
+        }
+
+        [Test]
+        public void IndustryProcessor_SingleSector_When_ProcessingBatches_Should_ProcessMultipleDifferentBatchesWhileItHasWorkCapacity()
+        {
+
+
+            Assert.Fail();
         }
 
         [Test]
@@ -382,6 +438,22 @@ namespace Pulsar4X.Tests
         }
 
         [Test]
+        public void IndustryProcessor_AllSectors_When_Processing_Should_ProcessInOrderOfPriority()
+        {
+
+
+            Assert.Fail();
+        }
+
+        [Test]
+        public void IndustryProcessor_AllSectors_When_Processing_Should_AttemptToUseAllAvailableWorkCapacity()
+        {
+
+
+            Assert.Fail();
+        }
+
+        [Test]
         public void ABatchRecipeShouldBeAbleToOutputServices()
         {
             Assert.Fail();
@@ -393,18 +465,6 @@ namespace Pulsar4X.Tests
             Assert.Fail();
         }
         
-        [Test]
-        public void AnIndustryShouldBeAbleToProcessABatchesMultipleTimesIfItHasEnoughWorkCapacityAvailable()
-        {
-            Assert.Fail();
-        }
-
-        [Test]
-        public void AnIndustryShouldBeAbleToProcessMultipleDifferentRecipesIfItHasEnoughWorkCapacityAvailable()
-        {
-            Assert.Fail();
-        }
-
         [Test]
         public void TradeGoodLibrary_OnGetByName_InvalidEntry_Should_ThrowException()
         {
@@ -635,6 +695,7 @@ namespace Pulsar4X.Tests
                 Name = "Cookie Clickery",
                 Description = "It is like a bakery, but with less flour and more eldritch horrors.",
                 ID = Guid.NewGuid(),
+                WorkCapacity = 1,
                 BatchRecipe = clickedCookieRecipe
             };
 
@@ -656,6 +717,29 @@ namespace Pulsar4X.Tests
                 Name = "Cookie Bakery",
                 Description = "It is like Grandma, but with less wrinkles. Uses flour and spit to make cookies.",
                 ID = Guid.NewGuid(),
+                WorkCapacity = 1,
+                BatchRecipe = bakedCookieRecipe
+            };
+
+            return bakery;
+        }
+
+        private IndustrySD SetupSlowCookiesFromFlourIndustry(TradeGoodSD cookies, TradeGoodSD flour)
+        {
+            var recipeCost = new BatchTradeGoods();
+            recipeCost.AddTradeGood(flour, 2);
+
+            var recipeResult = new BatchTradeGoods();
+            recipeResult.AddTradeGood(cookies, 2700);
+
+            var bakedCookieRecipe = new BatchRecipe("1", recipeCost, recipeResult, 999, 5);
+
+            var bakery = new IndustrySD
+            {
+                Name = "Cookie Bakery",
+                Description = "It is like Grandma, but with less wrinkles. Uses flour and spit to slow bake cookies.",
+                ID = Guid.NewGuid(),
+                WorkCapacity = 57,
                 BatchRecipe = bakedCookieRecipe
             };
 
@@ -762,6 +846,7 @@ namespace Pulsar4X.Tests
                 Name = "Refining",
                 Description = "Processes common N-Elements and rare N-Elements into Materials.",
                 ID = Guid.NewGuid(),
+                WorkCapacity = 1,
                 BatchRecipe = recipes.Get("MaterialsFromElements")
             };
 
@@ -774,6 +859,7 @@ namespace Pulsar4X.Tests
                 Name = "Recycling and Transmutation",
                 Description = "Recycles waste back into the constituent common and rare N-Elements.",
                 ID = Guid.NewGuid(),
+                WorkCapacity = 1,
                 BatchRecipe = recipes.Get("RecyclingNelementsFromWaste")
             };
 
@@ -786,6 +872,7 @@ namespace Pulsar4X.Tests
                 Name = "Heavy Industry",
                 Description = "Manufactures technology and components.",
                 ID = Guid.NewGuid(),
+                WorkCapacity = 1,
                 BatchRecipe = recipes.Get("Technology")
             };
 
@@ -798,6 +885,7 @@ namespace Pulsar4X.Tests
                 Name = "Consumer Industry",
                 Description = "Manufactures consumer goods for use by the general populace.",
                 ID = Guid.NewGuid(),
+                WorkCapacity = 1,
                 BatchRecipe = recipes.Get("ConsumerGoods")
             };
 
