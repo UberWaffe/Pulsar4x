@@ -47,9 +47,21 @@ namespace Pulsar4X.Tests
             var cookies = SetupCookieTradeGood();
 
             theBatch.AddTradeGood(cookies, -999);
-            var cookieCount = theBatch.FullItems[cookies.ID];
+            var cookieCount = theBatch.Items[cookies.ID];
 
             Assert.AreEqual(cookieCount, 999);
+        }
+
+        [Test]
+        public void BatchRecipe_When_InstanciatedWithAZeroCost_Should_ThrowAnException()
+        {
+            Assert.Fail();
+        }
+
+        [Test]
+        public void BatchRecipe_When_InstanciatedWithANegativeCost_Should_ThrowAnException()
+        {
+            Assert.Fail();
         }
 
         [Test]
@@ -63,20 +75,20 @@ namespace Pulsar4X.Tests
 
             var cookieSector = new IndustrySector(cookieClickery, 1);
 
-            var cookiePile = new CargoStorageDB();
-            cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            var cookiePile = new CargoAndServices(tradeGoodsDefinitions);
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
 
             var cookieCheck = new Dictionary<ICargoable, int>
             {
                 { cookies, 1 }
             };
 
-            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
+            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile.AvailableCargo, cookieCheck);
             Assert.IsFalse(hasCookies);
 
             cookiePile = cookieSector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
 
-            hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
+            hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile.AvailableCargo, cookieCheck);
             Assert.IsTrue(hasCookies);
         }
 
@@ -92,26 +104,26 @@ namespace Pulsar4X.Tests
 
             var cookieSector = new IndustrySector(cookieBakeries, 1);
 
-            var cookiePile = new CargoStorageDB();
-            cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
-            cookiePile.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            var cookiePile = new CargoAndServices(tradeGoodsDefinitions);
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
 
             var cookieCheck = new Dictionary<ICargoable, int>
             {
                 { cookies, 1800 }
             };
             
-            StorageSpaceProcessor.AddCargo(cookiePile, flour, 2);
+            StorageSpaceProcessor.AddCargo(cookiePile.AvailableCargo, flour, 2);
             cookiePile = cookieSector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
 
-            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
+            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile.AvailableCargo, cookieCheck);
             Assert.IsTrue(hasCookies);
 
             var flourCheck = new Dictionary<ICargoable, int>
             {
                 { flour, 1 }
             };
-            var hasFlour = StorageSpaceProcessor.HasRequiredItems(cookiePile, flourCheck);
+            var hasFlour = StorageSpaceProcessor.HasRequiredItems(cookiePile.AvailableCargo, flourCheck);
             Assert.IsFalse(hasFlour);
         }
 
@@ -127,26 +139,26 @@ namespace Pulsar4X.Tests
 
             var cookieSector = new IndustrySector(cookieBakeries, 1);
 
-            var cookiePile = new CargoStorageDB();
-            cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
-            cookiePile.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            var cookiePile = new CargoAndServices(tradeGoodsDefinitions);
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
 
             var cookieCheck = new Dictionary<ICargoable, int>
             {
                 { cookies, 1800 }
             };
             
-            StorageSpaceProcessor.AddCargo(cookiePile, flour, 1);
+            StorageSpaceProcessor.AddCargo(cookiePile.AvailableCargo, flour, 1);
             cookiePile = cookieSector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
 
-            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
+            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile.AvailableCargo, cookieCheck);
             Assert.IsFalse(hasCookies);
 
             var flourCheck = new Dictionary<ICargoable, int>
             {
                 { flour, 1 }
             };
-            var hasFlour = StorageSpaceProcessor.HasRequiredItems(cookiePile, flourCheck);
+            var hasFlour = StorageSpaceProcessor.HasRequiredItems(cookiePile.AvailableCargo, flourCheck);
             Assert.IsTrue(hasFlour);
         }
 
@@ -162,11 +174,11 @@ namespace Pulsar4X.Tests
 
             var cookieSector = new IndustrySector(cookieBakeries, 3);
 
-            var cookiePile = new CargoStorageDB();
-            cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
-            cookiePile.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            var cookiePile = new CargoAndServices(tradeGoodsDefinitions);
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
             
-            StorageSpaceProcessor.AddCargo(cookiePile, flour, (2 * 2) + 1);
+            StorageSpaceProcessor.AddCargo(cookiePile.AvailableCargo, flour, (2 * 2) + 1);
             cookiePile = cookieSector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
 
             var finalHasCheck = new Dictionary<ICargoable, int>
@@ -174,7 +186,7 @@ namespace Pulsar4X.Tests
                 { cookies, 1800 * 2 },
                 { flour, 1 }
             };
-            Assert.IsTrue(CargoHasExactNumbers(cookiePile, finalHasCheck));
+            Assert.IsTrue(CargoHasExactNumbers(cookiePile.AvailableCargo, finalHasCheck));
         }
 
         [Test]
@@ -189,26 +201,26 @@ namespace Pulsar4X.Tests
 
             var cookieSector = new IndustrySector(cookieBakeries, 100);
 
-            var cookiePile = new CargoStorageDB();
-            cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
-            cookiePile.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            var cookiePile = new CargoAndServices(tradeGoodsDefinitions);
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
 
             var cookieCheck = new Dictionary<ICargoable, int>
             {
                 { cookies, 180000 }
             };
             
-            StorageSpaceProcessor.AddCargo(cookiePile, flour, 200);
+            StorageSpaceProcessor.AddCargo(cookiePile.AvailableCargo, flour, 200);
             cookiePile = cookieSector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
 
-            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile, cookieCheck);
+            var hasCookies = StorageSpaceProcessor.HasRequiredItems(cookiePile.AvailableCargo, cookieCheck);
             Assert.IsTrue(hasCookies);
 
             var flourCheck = new Dictionary<ICargoable, int>
             {
                 { flour, 1 }
             };
-            var hasFlour = StorageSpaceProcessor.HasRequiredItems(cookiePile, flourCheck);
+            var hasFlour = StorageSpaceProcessor.HasRequiredItems(cookiePile.AvailableCargo, flourCheck);
             Assert.IsFalse(hasFlour);
         }
 
@@ -224,11 +236,11 @@ namespace Pulsar4X.Tests
 
             var cookieSector = new IndustrySector(cookieBakeries, 100);
 
-            var cookiePile = new CargoStorageDB();
-            cookiePile.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
-            cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 1800 * 50, FreeCapacityKg = 1800 * 50 });
+            var cookiePile = new CargoAndServices(tradeGoodsDefinitions);
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 1800 * 50, FreeCapacityKg = 1800 * 50 });
 
-            StorageSpaceProcessor.AddCargo(cookiePile, flour, 2 * 100);
+            StorageSpaceProcessor.AddCargo(cookiePile.AvailableCargo, flour, 2 * 100);
             cookiePile = cookieSector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
 
             var finalHasCheck = new Dictionary<ICargoable, int>
@@ -236,7 +248,7 @@ namespace Pulsar4X.Tests
                 { cookies, 1800 * 50 },
                 { flour, 2 * 50 }
             };
-            Assert.IsTrue(CargoHasExactNumbers(cookiePile, finalHasCheck));
+            Assert.IsTrue(CargoHasExactNumbers(cookiePile.AvailableCargo, finalHasCheck));
         }
 
         [Test]
@@ -251,18 +263,18 @@ namespace Pulsar4X.Tests
 
             var slowBakerySector = new IndustrySector(slowBakeries, 1);
 
-            var cookiePile = new CargoStorageDB();
-            cookiePile.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
-            cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            var cookiePile = new CargoAndServices(tradeGoodsDefinitions);
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
 
-            StorageSpaceProcessor.AddCargo(cookiePile, flour, 9999999999 );
+            StorageSpaceProcessor.AddCargo(cookiePile.AvailableCargo, flour, 9999999999 );
             cookiePile = slowBakerySector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
 
             var finalHasCheck = new Dictionary<ICargoable, int>
             {
                 { cookies, 2700 * 11 }
             };
-            Assert.IsTrue(CargoHasExactNumbers(cookiePile, finalHasCheck));
+            Assert.IsTrue(CargoHasExactNumbers(cookiePile.AvailableCargo, finalHasCheck));
         }
 
         [Test]
@@ -277,11 +289,11 @@ namespace Pulsar4X.Tests
 
             var slowBakerySector = new IndustrySector(slowBakeries, 1);
 
-            var cookiePile = new CargoStorageDB();
-            cookiePile.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
-            cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            var cookiePile = new CargoAndServices(tradeGoodsDefinitions);
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
 
-            StorageSpaceProcessor.AddCargo(cookiePile, flour, 9999999999);
+            StorageSpaceProcessor.AddCargo(cookiePile.AvailableCargo, flour, 9999999999);
             cookiePile = slowBakerySector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
 
             Assert.AreEqual(2, slowBakerySector.RemainingWorkCapacity);
@@ -311,7 +323,7 @@ namespace Pulsar4X.Tests
             var recycleCount = 157;
             allSectors.SetCount("Recycling and Transmutation", recycleCount);
 
-            StorageSpaceProcessor.AddCargo(colonyStorage, goodsLibrary.Get("Waste"), recycleCount * 100);
+            StorageSpaceProcessor.AddCargo(colonyStorage.AvailableCargo, goodsLibrary.Get("Waste"), recycleCount * 100);
             /* Results in 
              * "Common N-Elements" => 98
              * "Rare N-Elements" => 2
@@ -320,7 +332,7 @@ namespace Pulsar4X.Tests
             var refineCount = 77;
             allSectors.SetCount("Refining", refineCount);
 
-            StorageSpaceProcessor.AddCargo(colonyStorage, goodsLibrary.Get("Sustenance"), refineCount * 40 + 1);
+            StorageSpaceProcessor.AddCargo(colonyStorage.AvailableCargo, goodsLibrary.Get("Sustenance"), refineCount * 40 + 1);
             /*
              * Needs
              * "Common N-Elements" => 98
@@ -349,7 +361,7 @@ namespace Pulsar4X.Tests
                 { goodsLibrary.Get("Materials"), (refineCount - heavyCount) * 100 },
                 { goodsLibrary.Get("Technology"), heavyCount * 100 }
             };
-            Assert.IsTrue(CargoHasExactNumbers(colonyStorage, finalHasCheck));
+            Assert.IsTrue(CargoHasExactNumbers(colonyStorage.AvailableCargo, finalHasCheck));
         }
 
         [Test]
@@ -369,17 +381,30 @@ namespace Pulsar4X.Tests
         }
 
         [Test]
-        public void ABatchRecipeShouldBeAbleToOutputServices()
+        public void IndustryProcessor_SingleSector_When_Processing_Should_IncreaseServicesAvailableAccordingToRecipeOutput()
+        {
+            var internet = SetupTheInternetzIsForKhorneService();
+
+            var serviceDefs = new EconomyServiceLibrary(new List<EconomyServiceSD>() { internet });
+
+            var theIsp = SetupInternetServiceProvider(internet);
+
+            var informationSector = new IndustrySector(theIsp, 1);
+
+            var totallyEmptyCargo = new CargoAndServices(null);
+
+            totallyEmptyCargo = informationSector.ProcessBatches(totallyEmptyCargo, new TradeGoodLibrary(new List<TradeGoodSD>()));
+
+            var theCheckList = new Dictionary<Guid, int>() { { internet.ID, 357 } };
+            Assert.IsTrue(ServicesHasExactNumbers(totallyEmptyCargo, theCheckList));
+        }
+
+        [Test]
+        public void IndustryProcessor_SingleSector_When_Processing_Should_DecreaseServicesAvailableAccordingToRecipeInput()
         {
             Assert.Fail();
         }
 
-        [Test]
-        public void ABatchRecipeShouldBeAbleToConsumeServices()
-        {
-            Assert.Fail();
-        }
-        
         [Test]
         public void TradeGoodLibrary_OnGetByName_InvalidEntry_Should_ThrowException()
         {
@@ -580,19 +605,19 @@ namespace Pulsar4X.Tests
             return new TradeGoodLibrary(goodList);
         }
 
-        private CargoStorageDB SetupPlanetaryCargo(TradeGoodLibrary theGoods)
+        private CargoAndServices SetupPlanetaryCargo(TradeGoodLibrary theGoods)
         {
-            var theStorage = new CargoStorageDB();
+            var theStorage = new CargoAndServices(theGoods);
 
             foreach (var goodEntry in theGoods.GetAll())
             {
-                if (!theStorage.StoredCargoTypes.ContainsKey(goodEntry.CargoTypeID))
+                if (!theStorage.AvailableCargo.StoredCargoTypes.ContainsKey(goodEntry.CargoTypeID))
                 {
-                    theStorage.StoredCargoTypes.Add(goodEntry.CargoTypeID, new CargoTypeStore());
-                    theStorage.StoredCargoTypes[goodEntry.CargoTypeID].MaxCapacityKg = 1000000 * _metricTon;
-                    theStorage.StoredCargoTypes[goodEntry.CargoTypeID].FreeCapacityKg = 1000000 * _metricTon;
+                    theStorage.AvailableCargo.StoredCargoTypes.Add(goodEntry.CargoTypeID, new CargoTypeStore());
+                    theStorage.AvailableCargo.StoredCargoTypes[goodEntry.CargoTypeID].MaxCapacityKg = 1000000 * _metricTon;
+                    theStorage.AvailableCargo.StoredCargoTypes[goodEntry.CargoTypeID].FreeCapacityKg = 1000000 * _metricTon;
                 }
-                StorageSpaceProcessor.AddCargo(theStorage, goodEntry, 0);
+                StorageSpaceProcessor.AddCargo(theStorage.AvailableCargo, goodEntry, 0);
             }
             
             return theStorage;
@@ -824,6 +849,47 @@ namespace Pulsar4X.Tests
             }
 
             return true;
+        }
+
+        private bool ServicesHasExactNumbers(CargoAndServices theServices, Dictionary<Guid, int> theCheckList)
+        {
+            foreach (var checkEntry in theCheckList)
+            {
+                Assert.AreEqual(checkEntry.Value, theServices.AvailableServices[checkEntry.Key]);
+            }
+
+            return true;
+        }
+
+        private EconomyServiceSD SetupTheInternetzIsForKhorneService()
+        {
+            var internet = new EconomyServiceSD
+            {
+                Name = "Internetz",
+                Description = "Bytes for the byte god! Servers for the server room! [REDACTED] for the [REDACTED]!",
+                ID = Guid.NewGuid()
+            };
+
+            return internet;
+        }
+
+        private IndustrySD SetupInternetServiceProvider(EconomyServiceSD theInternet)
+        {
+            var recipeResult = new BatchTradeGoods();
+            recipeResult.ChangeService(theInternet, 357);
+
+            var internetHosting = new BatchRecipe("1", new BatchTradeGoods(), recipeResult);
+
+            var isp = new IndustrySD
+            {
+                Name = "Internet Service Provider",
+                Description = "Converts electricity to heat using transistors and charges you for it.",
+                ID = Guid.NewGuid(),
+                WorkCapacity = 1,
+                BatchRecipe = internetHosting
+            };
+
+            return isp;
         }
 
     }

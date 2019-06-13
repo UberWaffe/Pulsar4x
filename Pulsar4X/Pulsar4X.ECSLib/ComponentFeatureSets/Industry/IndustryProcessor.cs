@@ -7,7 +7,7 @@ namespace Pulsar4X.ECSLib
 {
     internal static class IndustryProcessor
     {
-        public static void ProcessAllIndustrySectors(IndustryAllSectors theEconomy, CargoStorageDB stockpile, TradeGoodLibrary tradeGoodsLibrary)
+        public static void ProcessAllIndustrySectors(IndustryAllSectors theEconomy, CargoAndServices stockpile, TradeGoodLibrary tradeGoodsLibrary)
         {
             var orderedList = theEconomy.GetSectorsInOrderOfDescendingPriority();
 

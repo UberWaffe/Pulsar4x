@@ -40,6 +40,14 @@ namespace Pulsar4X.ECSLib
             return RemainingWorkCapacity;
         }
 
+        private long ReduceRemainingWorkCapacity(long amount)
+        {
+            RemainingWorkCapacity -= Math.Abs(amount);
+            RemainingWorkCapacity = Math.Max(RemainingWorkCapacity, 0);
+
+            return RemainingWorkCapacity;
+        }
+
         public BatchRecipe GetRecipe()
         {
             return _data.BatchRecipe;
@@ -71,43 +79,39 @@ namespace Pulsar4X.ECSLib
             return (_data.Name == name);
         }
 
-        public CargoStorageDB ProcessBatches(CargoStorageDB stockpile, TradeGoodLibrary tradeGoodsLibrary)
+        public CargoAndServices ProcessBatches(CargoAndServices stockpile, TradeGoodLibrary tradeGoodsLibrary)
         {
-            var maximumRecipeBatchesToProcess = CalculateMaximumBatchesPossible(stockpile, tradeGoodsLibrary);
-
-            var consumptionResult = GetInputForCount(maximumRecipeBatchesToProcess);
-            var consumptionGoodsList = new Dictionary<ICargoable, long>();
-
-            foreach (var goodEntry in consumptionResult.FullItems)
-            {
-                var good = tradeGoodsLibrary.Get(goodEntry.Key);
-                var finalRequiredAmount = goodEntry.Value;
-
-                consumptionGoodsList.Add(good, finalRequiredAmount);
-            }
-
-            var hasAllRequiredConsumption = StorageSpaceProcessor.HasRequiredItems(stockpile, consumptionGoodsList);
-            if (hasAllRequiredConsumption == false)
+            var maximumRecipeBatchesToProcess = CalculateMaximumBatchesPossible(stockpile);
+            if (maximumRecipeBatchesToProcess <= 0)
                 return stockpile;
 
-            foreach (var goodEntry in consumptionResult.FullItems)
+            var consumptionResult = GetInputForCount(maximumRecipeBatchesToProcess);
+            foreach (var goodEntry in consumptionResult.Items)
             {
                 var good = tradeGoodsLibrary.Get(goodEntry.Key);
                 var finalRequiredAmount = goodEntry.Value;
 
-                StorageSpaceProcessor.RemoveCargo(stockpile, good, finalRequiredAmount);
+                StorageSpaceProcessor.RemoveCargo(stockpile.AvailableCargo, good, finalRequiredAmount);
+            }
+            foreach (var servieEntry in consumptionResult.Services)
+            {
+                stockpile.AvailableServices[servieEntry.Key] -= servieEntry.Value;
             }
 
             var productionResult = GetOutputForCount(maximumRecipeBatchesToProcess);
-            foreach (var goodEntry in productionResult.FullItems)
+            foreach (var goodEntry in productionResult.Items)
             {
                 var good = tradeGoodsLibrary.Get(goodEntry.Key);
                 var finalRequiredAmount = goodEntry.Value;
 
-                var freeCapacity = StorageSpaceProcessor.GetFreeCapacity(stockpile, good);
+                var freeCapacity = StorageSpaceProcessor.GetFreeCapacity(stockpile.AvailableCargo, good);
                 var actualAmountToAdd = Math.Min(finalRequiredAmount, freeCapacity);
 
-                StorageSpaceProcessor.AddCargo(stockpile, good, actualAmountToAdd);
+                StorageSpaceProcessor.AddCargo(stockpile.AvailableCargo, good, actualAmountToAdd);
+            }
+            foreach (var servieEntry in productionResult.Services)
+            {
+                stockpile.ChangeService(servieEntry.Key, servieEntry.Value);
             }
 
             ReduceRemainingWorkCapacity(GetTotalWorkEffortForCount(maximumRecipeBatchesToProcess));
@@ -115,66 +119,37 @@ namespace Pulsar4X.ECSLib
             return stockpile;
         }
 
-        private long CalculateMaximumBatchesPossible(CargoStorageDB stockpile, TradeGoodLibrary tradeGoodsLibrary)
+        private long CalculateMaximumBatchesPossible(CargoAndServices stockpile)
         {
             var finalBatchesCount = long.MaxValue;
-            finalBatchesCount = Math.Min(finalBatchesCount, CalculateMaximumBatchesPossibleWithOutputStorage(stockpile, tradeGoodsLibrary));
-            finalBatchesCount = Math.Min(finalBatchesCount, CalculateMaximumBatchesPossibleWithInputStockpiles(stockpile, tradeGoodsLibrary));
+            finalBatchesCount = Math.Min(finalBatchesCount, CalculateMaximumBatchesPossibleWithOutputStorage(stockpile));
+            finalBatchesCount = Math.Min(finalBatchesCount, CalculateMaximumBatchesPossibleWithAvailableInputs(stockpile));
             finalBatchesCount = Math.Min(finalBatchesCount, CalculateMaximumBatchesPossibleWithCurrentWorkCapacity());
 
             return finalBatchesCount;
         }
-
-        private long CalculateMaximumBatchesPossibleWithInputStockpiles(CargoStorageDB stockpile, TradeGoodLibrary tradeGoodsLibrary)
+        
+        private long CalculateMaximumBatchesPossibleWithAvailableInputs(CargoAndServices stockpile)
         {
-            var finalBatchesCount = long.MaxValue;
-
             var consumptionRequirementsOfOneBatch = GetInputForCount(1);
-            foreach (var goodEntry in consumptionRequirementsOfOneBatch.FullItems)
-            {
-                var good = tradeGoodsLibrary.Get(goodEntry.Key);
-                var amountNeeded = goodEntry.Value;
-
-                var stockpiledAmount = StorageSpaceProcessor.GetAmount(stockpile, good.CargoTypeID, good.ID);
-                var countOfBatchesWorthOfStockpile = stockpiledAmount / amountNeeded;
-
-                finalBatchesCount = Math.Min(finalBatchesCount, countOfBatchesWorthOfStockpile);
-            }
-            return finalBatchesCount;
+            return stockpile.CalculateMaximumBatchesPossibleWithAvailableInputs(consumptionRequirementsOfOneBatch);
         }
 
-        private long CalculateMaximumBatchesPossibleWithOutputStorage(CargoStorageDB stockpile, TradeGoodLibrary tradeGoodsLibrary)
+        private long CalculateMaximumBatchesPossibleWithOutputStorage(CargoAndServices stockpile)
         {
-            var finalBatchesCount = long.MaxValue;
-
             var productionResultsOfOneBatch = GetOutputForCount(1);
-            foreach (var goodEntry in productionResultsOfOneBatch.FullItems)
-            {
-                var good = tradeGoodsLibrary.Get(goodEntry.Key);
-                var spaceNeededForThisGoodForOneBatch = goodEntry.Value;
-
-                var freeCapacity = StorageSpaceProcessor.GetFreeCapacity(stockpile, good);
-                var countOfBatchesWorthOfSpace = freeCapacity / spaceNeededForThisGoodForOneBatch;
-
-                finalBatchesCount = Math.Min(finalBatchesCount, countOfBatchesWorthOfSpace);
-            }
-
-            return finalBatchesCount;
+            return stockpile.CalculateMaximumBatchesPossibleWithOutputStorage(productionResultsOfOneBatch);
         }
 
         private long CalculateMaximumBatchesPossibleWithCurrentWorkCapacity()
         {
-            var finalBatchesCount = RemainingWorkCapacity / GetRecipe().WorkRequired;
+            var workPerBatch = GetRecipe().WorkRequired;
+            if (workPerBatch <= 0)
+                return long.MaxValue;
+
+            var finalBatchesCount = RemainingWorkCapacity / workPerBatch;
             
             return finalBatchesCount;
-        }
-
-        private long ReduceRemainingWorkCapacity(long amount)
-        {
-            RemainingWorkCapacity -= Math.Abs(amount);
-            RemainingWorkCapacity = Math.Max(RemainingWorkCapacity, 0);
-
-            return RemainingWorkCapacity;
         }
 
         #endregion

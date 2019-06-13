@@ -4,12 +4,10 @@ using System.Collections.Generic;
 namespace Pulsar4X.ECSLib
 {
     [StaticData(true, IDPropertyName = "ID")]
-    public struct TradeGoodSD : ICargoable
+    public struct EconomyServiceSD
     {
+        public Guid ID { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public Guid ID { get; set; }
-        public Guid CargoTypeID { get; set; }
-        public int Mass { get; set; }
     }
 }
