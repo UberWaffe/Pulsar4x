@@ -402,7 +402,25 @@ namespace Pulsar4X.Tests
         [Test]
         public void IndustryProcessor_SingleSector_When_Processing_Should_DecreaseServicesAvailableAccordingToRecipeInput()
         {
-            Assert.Fail();
+            var internet = SetupTheInternetzIsForKhorneService();
+            var financial = SetupFinancialService();
+
+            var serviceDefs = new EconomyServiceLibrary(new List<EconomyServiceSD>() { internet, financial });
+            
+            var theBanks = SetupFinancialServicesProvider(internet, financial);
+
+            var financialSector = new IndustrySector(theBanks, 1);
+
+            var totallyEmptyCargo = new CargoAndServices(null);
+            totallyEmptyCargo.AvailableServices.SafeValueReplace(internet.ID, 24);
+
+            totallyEmptyCargo = financialSector.ProcessBatches(totallyEmptyCargo, new TradeGoodLibrary(new List<TradeGoodSD>()));
+
+            var theCheckList = new Dictionary<Guid, int>() {
+                { internet.ID, 4 },
+                { financial.ID, 10 }
+            };
+            Assert.IsTrue(ServicesHasExactNumbers(totallyEmptyCargo, theCheckList));
         }
 
         [Test]
@@ -873,6 +891,18 @@ namespace Pulsar4X.Tests
             return internet;
         }
 
+        private EconomyServiceSD SetupFinancialService()
+        {
+            var financials = new EconomyServiceSD
+            {
+                Name = "Financial Services",
+                Description = "Digital money and trades.",
+                ID = Guid.NewGuid()
+            };
+
+            return financials;
+        }
+
         private IndustrySD SetupInternetServiceProvider(EconomyServiceSD theInternet)
         {
             var recipeResult = new BatchTradeGoods();
@@ -890,6 +920,28 @@ namespace Pulsar4X.Tests
             };
 
             return isp;
+        }
+
+        private IndustrySD SetupFinancialServicesProvider(EconomyServiceSD theInternet, EconomyServiceSD financials)
+        {
+            var recipeCost = new BatchTradeGoods();
+            recipeCost.ChangeService(theInternet, 20);
+
+            var recipeResult = new BatchTradeGoods();
+            recipeResult.ChangeService(financials, 10);
+
+            var financialTransactions = new BatchRecipe("1", recipeCost, recipeResult);
+
+            var theBanks = new IndustrySD
+            {
+                Name = "Financial Institutions",
+                Description = "Moves digital numbers around. Apparently very important.",
+                ID = Guid.NewGuid(),
+                WorkCapacity = 1,
+                BatchRecipe = financialTransactions
+            };
+
+            return theBanks;
         }
 
     }
