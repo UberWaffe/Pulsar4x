@@ -300,10 +300,8 @@ namespace Pulsar4X.Tests
         }
 
         [Test]
-        public void IndustryProcessor_SingleSector_When_ProcessingBatches_Should_ProcessMultipleDifferentBatchesWhileItHasWorkCapacity()
+        public void IndustryProcessor_SingleSector_When_ProcessingMultipleDifferentBatchesAndHasWorkCapacity_Should_OutputTheCorrectResulstFromAllRecipes()
         {
-
-
             Assert.Fail();
         }
 
@@ -367,16 +365,12 @@ namespace Pulsar4X.Tests
         [Test]
         public void IndustryProcessor_AllSectors_When_Processing_Should_ProcessInOrderOfPriority()
         {
-
-
             Assert.Fail();
         }
 
         [Test]
         public void IndustryProcessor_AllSectors_When_Processing_Should_AttemptToUseAllAvailableWorkCapacity()
         {
-
-
             Assert.Fail();
         }
 

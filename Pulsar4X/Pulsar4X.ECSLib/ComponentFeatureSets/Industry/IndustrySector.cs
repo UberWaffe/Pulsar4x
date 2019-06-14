@@ -79,7 +79,7 @@ namespace Pulsar4X.ECSLib
             return (_data.Name == name);
         }
 
-        public CargoAndServices ProcessBatches(CargoAndServices stockpile, TradeGoodLibrary tradeGoodsLibrary)
+        public CargoAndServices ProcessBatches(CargoAndServices stockpile, ITradeGoodLibrary tradeGoodsLibrary)
         {
             var maximumRecipeBatchesToProcess = CalculateMaximumBatchesPossible(stockpile);
             if (maximumRecipeBatchesToProcess <= 0)

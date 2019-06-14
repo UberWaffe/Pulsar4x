@@ -9,17 +9,17 @@ namespace Pulsar4X.ECSLib
         public CargoStorageDB AvailableCargo { get; private set;  } = new CargoStorageDB();
         public Dictionary<Guid, long> AvailableServices { get; private set; } = new Dictionary<Guid, long>();
 
-        private TradeGoodLibrary _tradeGoodsLibrary;
+        private ITradeGoodLibrary _tradeGoodsLibrary;
         #endregion
 
         #region Constructors
-        public CargoAndServices(TradeGoodLibrary tradeGoodsLibrary)
+        public CargoAndServices(ITradeGoodLibrary tradeGoodsLibrary)
             : this(new CargoStorageDB(), new Dictionary<Guid, long>(), tradeGoodsLibrary)
         {
             
         }
 
-        public CargoAndServices(CargoStorageDB currentCargo, Dictionary<Guid, long> currentAvailableServices, TradeGoodLibrary tradeGoodsLibrary)
+        public CargoAndServices(CargoStorageDB currentCargo, Dictionary<Guid, long> currentAvailableServices, ITradeGoodLibrary tradeGoodsLibrary)
         {
             AvailableCargo = currentCargo;
             AvailableServices = currentAvailableServices;
@@ -36,7 +36,7 @@ namespace Pulsar4X.ECSLib
                 var good = _tradeGoodsLibrary.Get(goodEntry.Key);
                 var amountNeeded = goodEntry.Value;
 
-                var stockpiledAmount = StorageSpaceProcessor.GetAmount(AvailableCargo, good.CargoTypeID, good.ID);
+                var stockpiledAmount = StorageSpaceProcessor.GetAmount(AvailableCargo, good.CargoTypeID, goodEntry.Key);
                 var countOfBatchesWorthOfStockpile = stockpiledAmount / amountNeeded;
 
                 finalBatchesCount = Math.Min(finalBatchesCount, countOfBatchesWorthOfStockpile);
@@ -70,7 +70,7 @@ namespace Pulsar4X.ECSLib
                 var good = _tradeGoodsLibrary.Get(goodEntry.Key);
                 var spaceNeededForThisGoodForOneBatch = goodEntry.Value;
 
-                var freeCapacity = StorageSpaceProcessor.GetFreeCapacity(AvailableCargo, good);
+                var freeCapacity = StorageSpaceProcessor.GetFreeCapacity(AvailableCargo, good.CargoTypeID);
                 var countOfBatchesWorthOfSpace = freeCapacity / spaceNeededForThisGoodForOneBatch;
 
                 finalBatchesCount = Math.Min(finalBatchesCount, countOfBatchesWorthOfSpace);
