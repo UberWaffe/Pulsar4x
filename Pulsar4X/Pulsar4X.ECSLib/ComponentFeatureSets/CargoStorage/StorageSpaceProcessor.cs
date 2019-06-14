@@ -76,10 +76,15 @@ namespace Pulsar4X.ECSLib
 
         public static long GetFreeCapacity(CargoStorageDB storeDB, ICargoable item)
         {
-            if (storeDB.StoredCargoTypes.ContainsKey(item.CargoTypeID) == false)
+            return GetFreeCapacity(storeDB, item.CargoTypeID);
+        }
+
+        public static long GetFreeCapacity(CargoStorageDB storeDB, Guid cargoTypeId)
+        {
+            if (storeDB.StoredCargoTypes.ContainsKey(cargoTypeId) == false)
                 return 0;
 
-            return storeDB.StoredCargoTypes[item.CargoTypeID].FreeCapacityKg;
+            return storeDB.StoredCargoTypes[cargoTypeId].FreeCapacityKg;
         }
 
         /// <summary>

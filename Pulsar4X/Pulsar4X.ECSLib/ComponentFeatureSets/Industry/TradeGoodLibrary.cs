@@ -6,7 +6,14 @@ using System.Threading.Tasks;
 
 namespace Pulsar4X.ECSLib
 {
-    public class TradeGoodLibrary
+    public interface ITradeGoodLibrary
+    {
+        List<TradeGoodSD> GetAll();
+        TradeGoodSD Get(string nameOfTradeGood);
+        TradeGoodSD Get(Guid guidOfTradeGood);
+    }
+    
+    public class TradeGoodLibrary : ITradeGoodLibrary
     {
         private List<TradeGoodSD> _goods;
         private Dictionary<Guid, TradeGoodSD> _definitions;
