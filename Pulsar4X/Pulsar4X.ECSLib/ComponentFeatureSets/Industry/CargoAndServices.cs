@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Pulsar4X.ECSLib.ComponentFeatureSets.CargoStorage;
+using System;
 using System.Collections.Generic;
 
 namespace Pulsar4X.ECSLib
@@ -9,21 +10,21 @@ namespace Pulsar4X.ECSLib
         public CargoStorageDB AvailableCargo { get; private set;  } = new CargoStorageDB();
         public Dictionary<Guid, long> AvailableServices { get; private set; } = new Dictionary<Guid, long>();
 
-        private ITradeGoodLibrary _tradeGoodsLibrary;
+        private ICargoDefinitionsLibrary _library;
         #endregion
 
         #region Constructors
-        public CargoAndServices(ITradeGoodLibrary tradeGoodsLibrary)
+        public CargoAndServices(ICargoDefinitionsLibrary tradeGoodsLibrary)
             : this(new CargoStorageDB(), new Dictionary<Guid, long>(), tradeGoodsLibrary)
         {
             
         }
 
-        public CargoAndServices(CargoStorageDB currentCargo, Dictionary<Guid, long> currentAvailableServices, ITradeGoodLibrary tradeGoodsLibrary)
+        public CargoAndServices(CargoStorageDB currentCargo, Dictionary<Guid, long> currentAvailableServices, ICargoDefinitionsLibrary library)
         {
             AvailableCargo = currentCargo;
             AvailableServices = currentAvailableServices;
-            _tradeGoodsLibrary = tradeGoodsLibrary;
+            _library = library;
         }
         #endregion
 
@@ -33,10 +34,9 @@ namespace Pulsar4X.ECSLib
             
             foreach (var goodEntry in consumptionRequirementsOfOneBatch.Items)
             {
-                var good = _tradeGoodsLibrary.Get(goodEntry.Key);
                 var amountNeeded = goodEntry.Value;
 
-                var stockpiledAmount = StorageSpaceProcessor.GetAmount(AvailableCargo, good.CargoTypeID, goodEntry.Key);
+                var stockpiledAmount = StorageSpaceProcessor.GetAmount(AvailableCargo, goodEntry.Key, _library);
                 var countOfBatchesWorthOfStockpile = stockpiledAmount / amountNeeded;
 
                 finalBatchesCount = Math.Min(finalBatchesCount, countOfBatchesWorthOfStockpile);
@@ -67,13 +67,10 @@ namespace Pulsar4X.ECSLib
             
             foreach (var goodEntry in productionResultsOfOneBatch.Items)
             {
-                var good = _tradeGoodsLibrary.Get(goodEntry.Key);
-                var spaceNeededForThisGoodForOneBatch = goodEntry.Value;
+                var thisItemCountOutput = goodEntry.Value;
 
-                var freeCapacity = StorageSpaceProcessor.GetFreeCapacity(AvailableCargo, good.CargoTypeID);
-                var countOfBatchesWorthOfSpace = freeCapacity / spaceNeededForThisGoodForOneBatch;
-
-                finalBatchesCount = Math.Min(finalBatchesCount, countOfBatchesWorthOfSpace);
+                var freeCapacity = StorageSpaceProcessor.GetAvailableSpace(AvailableCargo, goodEntry.Key, _library);
+                finalBatchesCount = Math.Min(finalBatchesCount, freeCapacity.FreeCapacityItem / thisItemCountOutput);
             }
 
             return finalBatchesCount;
