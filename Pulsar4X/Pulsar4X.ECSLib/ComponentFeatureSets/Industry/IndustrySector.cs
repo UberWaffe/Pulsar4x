@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Newtonsoft.Json.Serialization;
+using Pulsar4X.ECSLib.ComponentFeatureSets.CargoStorage;
 
 namespace Pulsar4X.ECSLib
 {
@@ -79,7 +80,7 @@ namespace Pulsar4X.ECSLib
             return (_data.Name == name);
         }
 
-        public CargoAndServices ProcessBatches(CargoAndServices stockpile, ITradeGoodLibrary tradeGoodsLibrary)
+        public CargoAndServices ProcessBatches(CargoAndServices stockpile, ICargoDefinitionsLibrary library)
         {
             var maximumRecipeBatchesToProcess = CalculateMaximumBatchesPossible(stockpile);
             if (maximumRecipeBatchesToProcess <= 0)
@@ -88,10 +89,7 @@ namespace Pulsar4X.ECSLib
             var consumptionResult = GetInputForCount(maximumRecipeBatchesToProcess);
             foreach (var goodEntry in consumptionResult.Items)
             {
-                var good = tradeGoodsLibrary.Get(goodEntry.Key);
-                var finalRequiredAmount = goodEntry.Value;
-
-                StorageSpaceProcessor.RemoveCargo(stockpile.AvailableCargo, good, finalRequiredAmount);
+                StorageSpaceProcessor.RemoveCargo(stockpile.AvailableCargo, library.GetCargo(goodEntry.Key), goodEntry.Value);
             }
             foreach (var servieEntry in consumptionResult.Services)
             {
@@ -101,13 +99,10 @@ namespace Pulsar4X.ECSLib
             var productionResult = GetOutputForCount(maximumRecipeBatchesToProcess);
             foreach (var goodEntry in productionResult.Items)
             {
-                var good = tradeGoodsLibrary.Get(goodEntry.Key);
-                var finalRequiredAmount = goodEntry.Value;
+                var freeCapacity = StorageSpaceProcessor.GetAvailableSpace(stockpile.AvailableCargo, goodEntry.Key, library);
+                var actualAmountToAdd = Math.Min(goodEntry.Value, freeCapacity.FreeCapacityItem);
 
-                var freeCapacity = StorageSpaceProcessor.GetFreeCapacity(stockpile.AvailableCargo, good);
-                var actualAmountToAdd = Math.Min(finalRequiredAmount, freeCapacity);
-
-                StorageSpaceProcessor.AddCargo(stockpile.AvailableCargo, good, actualAmountToAdd);
+                StorageSpaceProcessor.AddCargo(stockpile.AvailableCargo, library.GetCargo(goodEntry.Key), actualAmountToAdd);
             }
             foreach (var servieEntry in productionResult.Services)
             {

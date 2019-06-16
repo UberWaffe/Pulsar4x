@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Pulsar4X.ECSLib;
 using System.Diagnostics;
+using Pulsar4X.ECSLib.ComponentFeatureSets.CargoStorage;
 
 namespace Pulsar4X.Tests
 {
@@ -310,7 +311,7 @@ namespace Pulsar4X.Tests
         {
             Entity colonyEntity = Entity.Create(_game.GlobalManager, _faction.Guid);
 
-            var goodsLibrary = SetupStandardTradeGoods();
+            var goodsLibrary = new TradeGoodLibrary(SetupStandardTradeGoods());
             var colonyStorage = SetupPlanetaryCargo(goodsLibrary);
             var industryLibrary = SetupStandardIndustries(goodsLibrary);
 
@@ -321,7 +322,7 @@ namespace Pulsar4X.Tests
             var recycleCount = 157;
             allSectors.SetCount("Recycling and Transmutation", recycleCount);
 
-            StorageSpaceProcessor.AddCargo(colonyStorage.AvailableCargo, goodsLibrary.Get("Waste"), recycleCount * 100);
+            StorageSpaceProcessor.AddCargo(colonyStorage.AvailableCargo, goodsLibrary.GetTradeGood("Waste"), recycleCount * 100);
             /* Results in 
              * "Common N-Elements" => 98
              * "Rare N-Elements" => 2
@@ -330,7 +331,7 @@ namespace Pulsar4X.Tests
             var refineCount = 77;
             allSectors.SetCount("Refining", refineCount);
 
-            StorageSpaceProcessor.AddCargo(colonyStorage.AvailableCargo, goodsLibrary.Get("Sustenance"), refineCount * 40 + 1);
+            StorageSpaceProcessor.AddCargo(colonyStorage.AvailableCargo, goodsLibrary.GetTradeGood("Sustenance"), refineCount * 40 + 1);
             /*
              * Needs
              * "Common N-Elements" => 98
@@ -353,11 +354,11 @@ namespace Pulsar4X.Tests
 
             var finalHasCheck = new Dictionary<ICargoable, int>
             {
-                { goodsLibrary.Get("Sustenance"), 1 },
-                { goodsLibrary.Get("Common N-Elements"), (recycleCount - refineCount) * 98 },
-                { goodsLibrary.Get("Rare N-Elements"), (recycleCount - refineCount) * 2 },
-                { goodsLibrary.Get("Materials"), (refineCount - heavyCount) * 100 },
-                { goodsLibrary.Get("Technology"), heavyCount * 100 }
+                { goodsLibrary.GetTradeGood("Sustenance"), 1 },
+                { goodsLibrary.GetTradeGood("Common N-Elements"), (recycleCount - refineCount) * 98 },
+                { goodsLibrary.GetTradeGood("Rare N-Elements"), (recycleCount - refineCount) * 2 },
+                { goodsLibrary.GetTradeGood("Materials"), (refineCount - heavyCount) * 100 },
+                { goodsLibrary.GetTradeGood("Technology"), heavyCount * 100 }
             };
             Assert.IsTrue(CargoHasExactNumbers(colonyStorage.AvailableCargo, finalHasCheck));
         }
@@ -423,7 +424,7 @@ namespace Pulsar4X.Tests
             var flour = SetupFlourTradeGood();
             var tradeGoodsDefinitions = new TradeGoodLibrary(new List<TradeGoodSD>() { flour });
 
-            Assert.Throws<Exception>(() => tradeGoodsDefinitions.Get("This trade good doesn't exist"));
+            Assert.Throws<Exception>(() => tradeGoodsDefinitions.GetTradeGood("This trade good doesn't exist"));
         }
 
         [Test]
@@ -432,13 +433,13 @@ namespace Pulsar4X.Tests
             var flour = SetupFlourTradeGood();
             var tradeGoodsDefinitions = new TradeGoodLibrary(new List<TradeGoodSD>() { flour });
 
-            Assert.Throws<KeyNotFoundException>(() => tradeGoodsDefinitions.Get(Guid.NewGuid()));
+            Assert.Throws<KeyNotFoundException>(() => tradeGoodsDefinitions.GetTradeGood(Guid.NewGuid()));
         }
 
         [Test]
         public void IndustryLibrary_OnGetByName_InvalidEntry_Should_ThrowException()
         {
-            var theGoods = SetupStandardTradeGoods();
+            var theGoods = new TradeGoodLibrary(SetupStandardTradeGoods());
             var industryLibrary = SetupStandardIndustries(theGoods);
 
             Assert.Throws<Exception>(() => industryLibrary.Get("No such industry"));
@@ -447,7 +448,7 @@ namespace Pulsar4X.Tests
         [Test]
         public void IndustryLibrary_OnGetByGuid_InvalidEntry_Should_ThrowException()
         {
-            var theGoods = SetupStandardTradeGoods();
+            var theGoods = new TradeGoodLibrary(SetupStandardTradeGoods());
             var industryLibrary = SetupStandardIndustries(theGoods);
 
             Assert.Throws<Exception>(() => industryLibrary.Get(Guid.NewGuid()));
@@ -456,7 +457,7 @@ namespace Pulsar4X.Tests
         [Test]
         public void BatchRecipeLibrary_OnGetByName_InvalidEntry_Should_ThrowException()
         {
-            var theGoods = SetupStandardTradeGoods();
+            var theGoods = new TradeGoodLibrary(SetupStandardTradeGoods());
             var recipeLibrary = SetupStandardRecipes(theGoods);
 
             Assert.Throws<Exception>(() => recipeLibrary.Get("This trade good doesn't exist"));
@@ -490,7 +491,7 @@ namespace Pulsar4X.Tests
             return flour;
         }
 
-        private TradeGoodLibrary SetupStandardTradeGoods(Nullable<Guid> cargoType = null)
+        private List<TradeGoodSD> SetupStandardTradeGoods(Nullable<Guid> cargoType = null)
         {
             var goodList = new List<TradeGoodSD>();
 
@@ -614,14 +615,14 @@ namespace Pulsar4X.Tests
             };
             goodList.Add(theGood);
 
-            return new TradeGoodLibrary(goodList);
+            return goodList;
         }
 
-        private CargoAndServices SetupPlanetaryCargo(TradeGoodLibrary theGoods)
+        private CargoAndServices SetupPlanetaryCargo(ICargoDefinitionsLibrary theGoods)
         {
             var theStorage = new CargoAndServices(theGoods);
 
-            foreach (var goodEntry in theGoods.GetAll())
+            foreach (var goodEntry in theGoods.GetAllList())
             {
                 if (!theStorage.AvailableCargo.StoredCargoTypes.ContainsKey(goodEntry.CargoTypeID))
                 {
@@ -698,19 +699,19 @@ namespace Pulsar4X.Tests
             return bakery;
         }
 
-        private BatchRecipeLibrary SetupStandardRecipes(TradeGoodLibrary theGoods)
+        private BatchRecipeLibrary SetupStandardRecipes(ICargoDefinitionsLibrary theGoods)
         {
             var result = new BatchRecipeLibrary();
 
             // MaterialsFromElements
             // ---------------------------------------------------------------------------
             var recipeCost = new BatchTradeGoods();
-            recipeCost.AddTradeGood(theGoods.Get("Common N-Elements"), 98);
-            recipeCost.AddTradeGood(theGoods.Get("Rare N-Elements"), 2);
-            recipeCost.AddTradeGood(theGoods.Get("Sustenance"), 40);
+            recipeCost.AddTradeGood(theGoods.GetTradeGood("Common N-Elements"), 98);
+            recipeCost.AddTradeGood(theGoods.GetTradeGood("Rare N-Elements"), 2);
+            recipeCost.AddTradeGood(theGoods.GetTradeGood("Sustenance"), 40);
 
             var recipeResult = new BatchTradeGoods();
-            recipeResult.AddTradeGood(theGoods.Get("Materials"), 100);
+            recipeResult.AddTradeGood(theGoods.GetTradeGood("Materials"), 100);
 
             var materialsRecipe = new BatchRecipe("MaterialsFromElements", recipeCost, recipeResult, 950);
 
@@ -719,11 +720,11 @@ namespace Pulsar4X.Tests
             // RecyclingNelementsFromWaste
             // ---------------------------------------------------------------------------
             recipeCost = new BatchTradeGoods();
-            recipeCost.AddTradeGood(theGoods.Get("Waste"), 100);
+            recipeCost.AddTradeGood(theGoods.GetTradeGood("Waste"), 100);
 
             recipeResult = new BatchTradeGoods();
-            recipeResult.AddTradeGood(theGoods.Get("Common N-Elements"), 98);
-            recipeResult.AddTradeGood(theGoods.Get("Rare N-Elements"), 2);
+            recipeResult.AddTradeGood(theGoods.GetTradeGood("Common N-Elements"), 98);
+            recipeResult.AddTradeGood(theGoods.GetTradeGood("Rare N-Elements"), 2);
 
             materialsRecipe = new BatchRecipe("RecyclingNelementsFromWaste", recipeCost, recipeResult, 1000);
 
@@ -732,10 +733,10 @@ namespace Pulsar4X.Tests
             // Technology
             // ---------------------------------------------------------------------------
             recipeCost = new BatchTradeGoods();
-            recipeCost.AddTradeGood(theGoods.Get("Materials"), 100);
+            recipeCost.AddTradeGood(theGoods.GetTradeGood("Materials"), 100);
 
             recipeResult = new BatchTradeGoods();
-            recipeResult.AddTradeGood(theGoods.Get("Technology"), 100);
+            recipeResult.AddTradeGood(theGoods.GetTradeGood("Technology"), 100);
 
             materialsRecipe = new BatchRecipe("Technology", recipeCost, recipeResult, 900);
 
@@ -744,12 +745,12 @@ namespace Pulsar4X.Tests
             // ConsumerGoods
             // ---------------------------------------------------------------------------
             recipeCost = new BatchTradeGoods();
-            recipeCost.AddTradeGood(theGoods.Get("Materials"), 50);
-            recipeCost.AddTradeGood(theGoods.Get("Technology"), 50);
-            recipeCost.AddTradeGood(theGoods.Get("Sustenance"), 5);
+            recipeCost.AddTradeGood(theGoods.GetTradeGood("Materials"), 50);
+            recipeCost.AddTradeGood(theGoods.GetTradeGood("Technology"), 50);
+            recipeCost.AddTradeGood(theGoods.GetTradeGood("Sustenance"), 5);
 
             recipeResult = new BatchTradeGoods();
-            recipeResult.AddTradeGood(theGoods.Get("Consumer Goods"), 100);
+            recipeResult.AddTradeGood(theGoods.GetTradeGood("Consumer Goods"), 100);
 
             materialsRecipe = new BatchRecipe("ConsumerGoods", recipeCost, recipeResult, 890);
 
@@ -758,12 +759,12 @@ namespace Pulsar4X.Tests
             // Luxuries
             // ---------------------------------------------------------------------------
             recipeCost = new BatchTradeGoods();
-            recipeCost.AddTradeGood(theGoods.Get("Materials"), 46);
-            recipeCost.AddTradeGood(theGoods.Get("Rare N-Elements"), 4);
-            recipeCost.AddTradeGood(theGoods.Get("Sustenance"), 50);
+            recipeCost.AddTradeGood(theGoods.GetTradeGood("Materials"), 46);
+            recipeCost.AddTradeGood(theGoods.GetTradeGood("Rare N-Elements"), 4);
+            recipeCost.AddTradeGood(theGoods.GetTradeGood("Sustenance"), 50);
 
             recipeResult = new BatchTradeGoods();
-            recipeResult.AddTradeGood(theGoods.Get("Luxuries"), 100);
+            recipeResult.AddTradeGood(theGoods.GetTradeGood("Luxuries"), 100);
 
             materialsRecipe = new BatchRecipe("Luxuries", recipeCost, recipeResult, 880);
 
@@ -772,12 +773,12 @@ namespace Pulsar4X.Tests
             // ArtworkAndCreativeWorks
             // ---------------------------------------------------------------------------
             recipeCost = new BatchTradeGoods();
-            recipeCost.AddTradeGood(theGoods.Get("Materials"), 20);
-            recipeCost.AddTradeGood(theGoods.Get("Rare N-Elements"), 20);
-            recipeCost.AddTradeGood(theGoods.Get("Sustenance"), 60);
+            recipeCost.AddTradeGood(theGoods.GetTradeGood("Materials"), 20);
+            recipeCost.AddTradeGood(theGoods.GetTradeGood("Rare N-Elements"), 20);
+            recipeCost.AddTradeGood(theGoods.GetTradeGood("Sustenance"), 60);
 
             recipeResult = new BatchTradeGoods();
-            recipeResult.AddTradeGood(theGoods.Get("Art and Artifacts"), 100);
+            recipeResult.AddTradeGood(theGoods.GetTradeGood("Art and Artifacts"), 100);
 
             materialsRecipe = new BatchRecipe("ArtworkAndCreativeWorks", recipeCost, recipeResult, 870);
 
@@ -786,7 +787,7 @@ namespace Pulsar4X.Tests
             return result;
         }
 
-        private IndustryLibrary SetupStandardIndustries(TradeGoodLibrary theGoods)
+        private IndustryLibrary SetupStandardIndustries(ICargoDefinitionsLibrary theGoods)
         {
             var result = new IndustryLibrary();
             var recipes = SetupStandardRecipes(theGoods);
@@ -938,5 +939,180 @@ namespace Pulsar4X.Tests
             return theBanks;
         }
 
+    }
+
+    public class TradeGoodLibrary : ICargoDefinitionsLibrary
+    {
+        private Dictionary<Guid, ICargoable> _definitions;
+        private Dictionary<Guid, TradeGoodSD> _goods;
+
+        #region Not Implemented
+        public Dictionary<Guid, ICargoable> GetAll()
+        {
+            throw new NotImplementedException();
+        }
+
+        public object GetAny(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+        
+        public ProcessedMaterialSD GetMaterial(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ProcessedMaterialSD GetMaterial(Guid guid)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Dictionary<Guid, ProcessedMaterialSD> GetMaterials()
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<ProcessedMaterialSD> GetMaterialsList()
+        {
+            throw new NotImplementedException();
+        }
+
+        public MineralSD GetMineral(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public MineralSD GetMineral(Guid guid)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Dictionary<Guid, MineralSD> GetMinerals()
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<MineralSD> GetMineralsList()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsMaterial(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsMineral(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsOther(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+        
+        public void LoadDefinitions(List<MineralSD> minerals, List<ProcessedMaterialSD> processedMaterials, List<TradeGoodSD> goodsCargo, List<ICargoable> otherCargo)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void LoadMaterialsDefinitions(List<ProcessedMaterialSD> materials)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void LoadMineralDefinitions(List<MineralSD> minerals)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void LoadOtherDefinitions(List<ICargoable> otherCargo)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
+
+
+        public ICargoable GetCargo(Guid id)
+        {
+            return _definitions[id];
+        }
+
+        public Guid GetCargoType(Guid id)
+        {
+            return _definitions[id].CargoTypeID;
+        }
+
+        public List<ICargoable> GetAllList()
+        {
+            return _definitions.Values.ToList();
+        }
+
+        public ICargoable GetOther(string nameOfCargo)
+        {
+            if (_definitions.Values.Any(tg => tg.Name == nameOfCargo))
+            {
+                return _definitions.Values.Single(tg => tg.Name == nameOfCargo);
+            }
+
+            throw new Exception("Cargo item with the name " + nameOfCargo + " not found in TradeGoodLibrary. Was the trade good properly loaded?");
+        }
+
+        public ICargoable GetOther(Guid guidOfCargo)
+        {
+            return _definitions[guidOfCargo];
+        }
+
+
+
+        #region Trade Goods
+        public TradeGoodLibrary(List<TradeGoodSD> tradeGoods)
+        {
+            _definitions = new Dictionary<Guid, ICargoable>();
+            _goods = new Dictionary<Guid, TradeGoodSD>();
+
+            LoadTradeGoodsDefinitions(tradeGoods);
+        }
+
+        public bool IsTradeGood(Guid id)
+        {
+            return _goods.ContainsKey(id);
+        }
+
+        public TradeGoodSD GetTradeGood(string name)
+        {
+            var result = GetOther(name);
+            return _goods[result.ID];
+        }
+
+        public TradeGoodSD GetTradeGood(Guid guid)
+        {
+            var result = GetOther(guid);
+            return _goods[result.ID];
+        }
+
+        public Dictionary<Guid, TradeGoodSD> GetTradeGoods()
+        {
+            return _goods;
+        }
+
+        public List<TradeGoodSD> GetTradeGoodsList()
+        {
+            return _goods.Values.ToList();
+        }
+
+        public void LoadTradeGoodsDefinitions(List<TradeGoodSD> goodsCargo)
+        {
+            if (goodsCargo != null)
+            {
+                foreach (var entry in goodsCargo)
+                {
+                    _definitions[entry.ID] = entry;
+                    _goods[entry.ID] = entry;
+                }
+            }
+        }
+        #endregion
     }
 }

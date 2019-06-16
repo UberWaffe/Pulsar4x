@@ -69,6 +69,12 @@ namespace Pulsar4X.ECSLib
             return storeDB.StoredCargoTypes[storeTypeGuid].ItemsAndAmounts[itemGuid];
         }
 
+        public static long GetAmount(CargoStorageDB storeDB, Guid itemId, ICargoDefinitionsLibrary library)
+        {
+            var cargoType = library.GetCargoType(itemId);
+            return storeDB.StoredCargoTypes[cargoType].ItemsAndAmounts[itemId];
+        }
+
         public static long GetAmount(CargoStorageDB storeDB, ICargoable item)
         {
             return storeDB.StoredCargoTypes[item.CargoTypeID].ItemsAndAmounts[item.ID];
