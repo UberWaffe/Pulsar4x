@@ -52,19 +52,7 @@ namespace Pulsar4X.Tests
 
             Assert.AreEqual(cookieCount, 999);
         }
-
-        [Test]
-        public void BatchRecipe_When_InstanciatedWithAZeroCost_Should_ThrowAnException()
-        {
-            Assert.Fail();
-        }
-
-        [Test]
-        public void BatchRecipe_When_InstanciatedWithANegativeCost_Should_ThrowAnException()
-        {
-            Assert.Fail();
-        }
-
+        
         [Test]
         public void IndustryProcessor_SingleSector_When_ProcessingRecipesWithNInputs_Should_OutputProduct()
         {
@@ -416,24 +404,6 @@ namespace Pulsar4X.Tests
                 { financial.ID, 10 }
             };
             Assert.IsTrue(ServicesHasExactNumbers(totallyEmptyCargo, theCheckList));
-        }
-
-        [Test]
-        public void TradeGoodLibrary_OnGetByName_InvalidEntry_Should_ThrowException()
-        {
-            var flour = SetupFlourTradeGood();
-            var tradeGoodsDefinitions = new TradeGoodLibrary(new List<TradeGoodSD>() { flour });
-
-            Assert.Throws<Exception>(() => tradeGoodsDefinitions.GetTradeGood("This trade good doesn't exist"));
-        }
-
-        [Test]
-        public void TradeGoodLibrary_OnGetByGuid_InvalidEntry_Should_ThrowException()
-        {
-            var flour = SetupFlourTradeGood();
-            var tradeGoodsDefinitions = new TradeGoodLibrary(new List<TradeGoodSD>() { flour });
-
-            Assert.Throws<KeyNotFoundException>(() => tradeGoodsDefinitions.GetTradeGood(Guid.NewGuid()));
         }
 
         [Test]
@@ -800,7 +770,8 @@ namespace Pulsar4X.Tests
                 Description = "Processes common N-Elements and rare N-Elements into Materials.",
                 ID = Guid.NewGuid(),
                 WorkCapacity = 1,
-                BatchRecipe = recipes.Get("MaterialsFromElements")
+                BatchRecipe = recipes.Get("MaterialsFromElements"),
+                Priority = 950
             };
 
             result.Add(theIndustry);
@@ -813,7 +784,8 @@ namespace Pulsar4X.Tests
                 Description = "Recycles waste back into the constituent common and rare N-Elements.",
                 ID = Guid.NewGuid(),
                 WorkCapacity = 1,
-                BatchRecipe = recipes.Get("RecyclingNelementsFromWaste")
+                BatchRecipe = recipes.Get("RecyclingNelementsFromWaste"),
+                Priority = 1000
             };
 
             result.Add(theIndustry);
@@ -826,7 +798,8 @@ namespace Pulsar4X.Tests
                 Description = "Manufactures technology and components.",
                 ID = Guid.NewGuid(),
                 WorkCapacity = 1,
-                BatchRecipe = recipes.Get("Technology")
+                BatchRecipe = recipes.Get("Technology"),
+                Priority = 900
             };
 
             result.Add(theIndustry);
@@ -839,7 +812,8 @@ namespace Pulsar4X.Tests
                 Description = "Manufactures consumer goods for use by the general populace.",
                 ID = Guid.NewGuid(),
                 WorkCapacity = 1,
-                BatchRecipe = recipes.Get("ConsumerGoods")
+                BatchRecipe = recipes.Get("ConsumerGoods"),
+                Priority = 890
             };
 
             result.Add(theIndustry);

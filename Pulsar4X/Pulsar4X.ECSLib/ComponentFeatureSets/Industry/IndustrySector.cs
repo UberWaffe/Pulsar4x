@@ -15,6 +15,8 @@ namespace Pulsar4X.ECSLib
         public long NumberOfIndustry { get; private set; }
 
         public long RemainingWorkCapacity { get; private set; }
+
+        public long Priority => _data.Priority;
         #endregion
 
         #region constructors
@@ -29,6 +31,7 @@ namespace Pulsar4X.ECSLib
         #endregion
 
         #region functions
+        
         public void SetCount(int count)
         {
             NumberOfIndustry = count;
