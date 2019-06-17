@@ -10,6 +10,7 @@ namespace Pulsar4X.ECSLib
         public string Name;
         public string Description;
         public long WorkCapacity;
+        public long Priority;
 
         public BatchRecipe BatchRecipe;
     }

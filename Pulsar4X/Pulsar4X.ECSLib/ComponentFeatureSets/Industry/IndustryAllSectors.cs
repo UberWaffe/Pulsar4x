@@ -33,7 +33,7 @@ namespace Pulsar4X.ECSLib
 
         public List<IndustrySector> GetSectorsInOrderOfDescendingPriority()
         {
-            var orderedList = _sectors.OrderByDescending(ind => ind.GetRecipe().Priority);
+            var orderedList = _sectors.OrderByDescending(ind => ind.Priority);
             return orderedList.ToList();
         }
     }

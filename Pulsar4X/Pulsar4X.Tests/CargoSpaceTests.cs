@@ -197,9 +197,29 @@ namespace Pulsar4X.Tests
         }
 
         [Test]
+        public void CargoDefinitionsLibrary_OnGetByName_InvalidEntry_Should_ThrowException()
+        {
+            var flour = SetupFlourTradeGood();
+            var library = new CargoDefinitionsLibrary();
+            library.LoadTradeGoodsDefinitions(new List<TradeGoodSD>() { flour });
+
+            Assert.Throws<Exception>(() => library.GetTradeGood("This trade good doesn't exist"));
+        }
+
+        [Test]
+        public void CargoDefinitionsLibrary_OnGetByGuid_InvalidEntry_Should_ThrowException()
+        {
+            var flour = SetupFlourTradeGood();
+            var library = new CargoDefinitionsLibrary();
+            library.LoadTradeGoodsDefinitions(new List<TradeGoodSD>() { flour });
+
+            Assert.Throws<KeyNotFoundException>(() => library.GetTradeGood(Guid.NewGuid()));
+        }
+
+        [Test]
         public void StorageSpaceProcessor_When_AskedToCheckIfItHasACargoTypeThatItDoesnotHave_Should_ReturnFalse()
         {
-            var cookies = SetupCookieTradeGood();
+            var cookies = SetupCookieCargoItem();
 
             var cookiePile = new CargoStorageDB();
 
@@ -216,8 +236,8 @@ namespace Pulsar4X.Tests
         [Test]
         public void StorageSpaceProcessor_When_AskedToCheckIfItHasASpecificItemThatItDoesnotHave_Should_ReturnFalse()
         {
-            var cookies = SetupCookieTradeGood();
-            var biscuits = SetupCookieTradeGood();
+            var cookies = SetupCookieCargoItem();
+            var biscuits = SetupCookieCargoItem();
             biscuits.CargoTypeID = cookies.CargoTypeID;
 
             var cookiePile = new CargoStorageDB();
@@ -237,7 +257,7 @@ namespace Pulsar4X.Tests
         [Test]
         public void StorageSpaceProcessor_When_AskedToCheckIfItHasCargoThatItDoesnotHaveEnoughOf_Should_ReturnFalse()
         {
-            var cookies = SetupCookieTradeGood();
+            var cookies = SetupCookieCargoItem();
 
             var cookiePile = new CargoStorageDB();
             cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
@@ -254,7 +274,7 @@ namespace Pulsar4X.Tests
         [Test]
         public void StorageSpaceProcessor_When_AskedToCheckIfItHasCargoThatItHasExactlyEnoughOf_Should_ReturnTrue()
         {
-            var cookies = SetupCookieTradeGood();
+            var cookies = SetupCookieCargoItem();
 
             var cookiePile = new CargoStorageDB();
             cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
@@ -271,7 +291,7 @@ namespace Pulsar4X.Tests
         [Test]
         public void StorageSpaceProcessor_When_AskedToCheckIfItHasCargoThatItHasMoreTHanEnoughOf_Should_ReturnTrue()
         {
-            var cookies = SetupCookieTradeGood();
+            var cookies = SetupCookieCargoItem();
 
             var cookiePile = new CargoStorageDB();
             cookiePile.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
@@ -308,7 +328,7 @@ namespace Pulsar4X.Tests
             Assert.AreEqual(30004, canStoreThisManyItems.FreeCapacityKg);
         }
 
-        private ProcessedMaterialSD SetupCookieTradeGood()
+        private ProcessedMaterialSD SetupCookieCargoItem()
         {
             var cookies = new ProcessedMaterialSD
             {
@@ -335,6 +355,35 @@ namespace Pulsar4X.Tests
 
             return rock;
         }
+
+        private TradeGoodSD SetupCookieTradeGood()
+        {
+            var cookies = new TradeGoodSD
+            {
+                Name = "Cookies",
+                Description = "Tastes like carpal tunnel and time.",
+                ID = Guid.NewGuid(),
+                CargoTypeID = Guid.NewGuid(),
+                Mass = 1
+            };
+
+            return cookies;
+        }
+
+        private TradeGoodSD SetupFlourTradeGood()
+        {
+            var flour = new TradeGoodSD
+            {
+                Name = "Flour",
+                Description = "Smells like misspelled flowers.",
+                ID = Guid.NewGuid(),
+                CargoTypeID = Guid.NewGuid(),
+                Mass = 1000
+            };
+
+            return flour;
+        }
+
     }
 
     public class JustSomeCargoThing : ICargoable
