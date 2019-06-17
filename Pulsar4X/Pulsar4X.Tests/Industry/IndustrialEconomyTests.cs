@@ -317,9 +317,39 @@ namespace Pulsar4X.Tests
         }
 
         [Test]
-        public void IndustryProcessor_SingleSector_When_ProcessingMultipleDifferentBatchesAndHasWorkCapacity_Should_OutputTheCorrectResulstFromAllRecipes()
+        public void IndustryProcessor_SingleSector_When_ProcessingMultipleDifferentBatchesAndHasWorkCapacity_Should_OutputTheCorrectResultsFromAllRecipesAccordingToPriority()
         {
-            Assert.Fail();
+            var cookies = SetupCookieTradeGood();
+            var flour = SetupFlourTradeGood();
+            var sugar = SetupSugarTradeGood();
+            var candy = SetupCandyTradeGood();
+
+            var tradeGoodsDefinitions = new TradeGoodLibrary(new List<TradeGoodSD>() { cookies, flour, sugar, candy });
+
+            var sweetmaker = SetupSweetsIndustry(cookies, flour, sugar, candy);
+
+            var sweetsSector = new IndustrySector(sweetmaker, 1);
+
+            var sweetsPile = new CargoAndServices(tradeGoodsDefinitions);
+            sweetsPile.AvailableCargo.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            sweetsPile.AvailableCargo.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            sweetsPile.AvailableCargo.StoredCargoTypes.Add(sugar.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            sweetsPile.AvailableCargo.StoredCargoTypes.Add(candy.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+
+            StorageSpaceProcessor.AddCargo(sweetsPile.AvailableCargo, sugar, 7);
+            StorageSpaceProcessor.AddCargo(sweetsPile.AvailableCargo, flour, 10);
+
+            sweetsPile = sweetsSector.ProcessBatches(sweetsPile, tradeGoodsDefinitions);
+            Assert.AreEqual(0, sweetsSector.RemainingWorkCapacity);
+
+            var finalHasCheck = new Dictionary<ICargoable, int>
+            {
+                { candy, 990 * 7 },
+                { sugar, 0 },
+                { cookies, (1000 * 3) },
+                { flour, 7 }
+            };
+            Assert.IsTrue(CargoHasExactNumbers(sweetsPile.AvailableCargo, finalHasCheck));
         }
 
         [Test]
@@ -485,6 +515,74 @@ namespace Pulsar4X.Tests
             };
 
             return flour;
+        }
+
+        private TradeGoodSD SetupSugarTradeGood()
+        {
+            var sugar = new TradeGoodSD
+            {
+                Name = "Sugar",
+                Description = "Tastes like unbaked candy.",
+                ID = Guid.NewGuid(),
+                CargoTypeID = Guid.NewGuid(),
+                Mass = 1000
+            };
+
+            return sugar;
+        }
+
+        private TradeGoodSD SetupCandyTradeGood()
+        {
+            var candy = new TradeGoodSD
+            {
+                Name = "Candy",
+                Description = "Tastes like baked sugar.",
+                ID = Guid.NewGuid(),
+                CargoTypeID = Guid.NewGuid(),
+                Mass = 1
+            };
+
+            return candy;
+        }
+
+        private BatchRecipe SetupCookiesFromFlourRecipe(TradeGoodSD cookies, TradeGoodSD flour)
+        {
+            var inputs = new BatchTradeGoods();
+            inputs.AddTradeGood(flour, 1);
+
+            var outputs = new BatchTradeGoods();
+            outputs.AddTradeGood(cookies, 1000);
+
+            var cookiesFromFlour = new BatchRecipe(
+                Guid.NewGuid(),
+                "CookiesFromFlour",
+                inputs,
+                outputs,
+                2,
+                1
+            );
+
+            return cookiesFromFlour;
+        }
+
+        private BatchRecipe SetupCandyFromSugarRecipe(TradeGoodSD sugar, TradeGoodSD candy)
+        {
+            var inputs = new BatchTradeGoods();
+            inputs.AddTradeGood(sugar, 1);
+
+            var outputs = new BatchTradeGoods();
+            outputs.AddTradeGood(candy, 990);
+
+            var candyFromSugar = new BatchRecipe(
+                Guid.NewGuid(),
+                "CandyFromSugar",
+                inputs,
+                outputs,
+                10,
+                1
+            );
+
+            return candyFromSugar;
         }
 
         private List<TradeGoodSD> SetupStandardTradeGoods(Nullable<Guid> cargoType = null)
@@ -697,15 +795,9 @@ namespace Pulsar4X.Tests
 
         private IndustrySD SetupDoubleBakeryIndustry(TradeGoodSD cookies, TradeGoodSD flour)
         {
-            var recipeCost = new BatchTradeGoods();
-            recipeCost.AddTradeGood(flour, 1);
+            var bakedCookieRecipe = SetupCookiesFromFlourRecipe(cookies, flour);
 
             var recipeResult = new BatchTradeGoods();
-            recipeResult.AddTradeGood(cookies, 1000);
-
-            var bakedCookieRecipe = new BatchRecipe(Guid.NewGuid(), "1", recipeCost, recipeResult, 2);
-            
-            recipeResult = new BatchTradeGoods();
             recipeResult.AddTradeGood(cookies, 100);
 
             var magicCookieRecipe = new BatchRecipe(Guid.NewGuid(), "2", new BatchTradeGoods(), recipeResult, 1);
@@ -720,6 +812,24 @@ namespace Pulsar4X.Tests
             };
 
             return bakery;
+        }
+
+        private IndustrySD SetupSweetsIndustry(TradeGoodSD cookies, TradeGoodSD flour, TradeGoodSD sugar, TradeGoodSD candy)
+        {
+            var bakedCookieRecipe = SetupCookiesFromFlourRecipe(cookies, flour);
+
+            var candyRecipe = SetupCandyFromSugarRecipe(sugar, candy);
+            
+            var sweetery = new IndustrySD
+            {
+                Name = "Sweets Industry",
+                Description = "Can make cookies from flour, and candy from sugar.",
+                ID = Guid.NewGuid(),
+                WorkCapacity = 10,
+                BatchRecipes = new List<BatchRecipe>() { bakedCookieRecipe, candyRecipe }
+            };
+
+            return sweetery;
         }
 
         private BatchRecipeLibrary SetupStandardRecipes(ICargoDefinitionsLibrary theGoods)
