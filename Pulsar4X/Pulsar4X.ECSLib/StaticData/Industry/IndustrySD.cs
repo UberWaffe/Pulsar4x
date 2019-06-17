@@ -12,6 +12,6 @@ namespace Pulsar4X.ECSLib
         public long WorkCapacity;
         public long Priority;
 
-        public BatchRecipe BatchRecipe;
+        public List<BatchRecipe> BatchRecipes;
     }
 }
