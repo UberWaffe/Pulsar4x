@@ -26,7 +26,7 @@ namespace Pulsar4X.ECSLib
             NumberOfIndustry = size;
             RemainingWorkCapacity = StartNewWorkCycle();
 
-            if (_data.BatchRecipe == null) _data.BatchRecipe = new BatchRecipe();
+            if (_data.BatchRecipes == null) _data.BatchRecipes = new List<BatchRecipe>();
         }
         #endregion
 
@@ -52,30 +52,30 @@ namespace Pulsar4X.ECSLib
             return RemainingWorkCapacity;
         }
 
-        public BatchRecipe GetRecipe()
+        public BatchRecipe GetRecipe(Guid id)
         {
-            return _data.BatchRecipe;
+            return _data.BatchRecipes.First(br => br.Id == id);
         }
 
-        public BatchTradeGoods GetInputForCount(long count)
+        public BatchTradeGoods GetInputForCount(Guid recipeId, long count)
         {
-            var result = new BatchTradeGoods(GetRecipe().InputGoods);
+            var result = new BatchTradeGoods(GetRecipe(recipeId).InputGoods);
             result.MultiplyDivideBy(count, 1);
 
             return result;
         }
 
-        public BatchTradeGoods GetOutputForCount(long count)
+        public BatchTradeGoods GetOutputForCount(Guid recipeId, long count)
         {
-            var result = new BatchTradeGoods(GetRecipe().ResultGoods);
+            var result = new BatchTradeGoods(GetRecipe(recipeId).ResultGoods);
             result.MultiplyDivideBy(count, 1);
 
             return result;
         }
 
-        public long GetTotalWorkEffortForCount(long count)
+        public long GetTotalWorkEffortForCount(Guid recipeId, long count)
         {
-            return count * GetRecipe().WorkRequired;
+            return count * GetRecipe(recipeId).WorkRequired;
         }
 
         public bool IsIndustry(string name)
@@ -85,11 +85,22 @@ namespace Pulsar4X.ECSLib
 
         public CargoAndServices ProcessBatches(CargoAndServices stockpile, ICargoDefinitionsLibrary library)
         {
-            var maximumRecipeBatchesToProcess = CalculateMaximumBatchesPossible(stockpile);
+            var orderedRecipes = _data.BatchRecipes.OrderByDescending(rep => rep.Priority);
+            foreach (var recipe in orderedRecipes)
+            {
+                stockpile = ProcessBatchRecipe(recipe.Id, stockpile, library);
+            }
+
+            return stockpile;
+        }
+
+        public CargoAndServices ProcessBatchRecipe(Guid recipeId, CargoAndServices stockpile, ICargoDefinitionsLibrary library)
+        {
+            var maximumRecipeBatchesToProcess = CalculateMaximumBatchesPossible(recipeId, stockpile);
             if (maximumRecipeBatchesToProcess <= 0)
                 return stockpile;
 
-            var consumptionResult = GetInputForCount(maximumRecipeBatchesToProcess);
+            var consumptionResult = GetInputForCount(recipeId, maximumRecipeBatchesToProcess);
             foreach (var goodEntry in consumptionResult.Items)
             {
                 StorageSpaceProcessor.RemoveCargo(stockpile.AvailableCargo, library.GetCargo(goodEntry.Key), goodEntry.Value);
@@ -99,7 +110,7 @@ namespace Pulsar4X.ECSLib
                 stockpile.AvailableServices[servieEntry.Key] -= servieEntry.Value;
             }
 
-            var productionResult = GetOutputForCount(maximumRecipeBatchesToProcess);
+            var productionResult = GetOutputForCount(recipeId, maximumRecipeBatchesToProcess);
             foreach (var goodEntry in productionResult.Items)
             {
                 var freeCapacity = StorageSpaceProcessor.GetAvailableSpace(stockpile.AvailableCargo, goodEntry.Key, library);
@@ -112,36 +123,36 @@ namespace Pulsar4X.ECSLib
                 stockpile.ChangeService(servieEntry.Key, servieEntry.Value);
             }
 
-            ReduceRemainingWorkCapacity(GetTotalWorkEffortForCount(maximumRecipeBatchesToProcess));
+            ReduceRemainingWorkCapacity(GetTotalWorkEffortForCount(recipeId, maximumRecipeBatchesToProcess));
 
             return stockpile;
         }
 
-        private long CalculateMaximumBatchesPossible(CargoAndServices stockpile)
+        private long CalculateMaximumBatchesPossible(Guid recipeId, CargoAndServices stockpile)
         {
             var finalBatchesCount = long.MaxValue;
-            finalBatchesCount = Math.Min(finalBatchesCount, CalculateMaximumBatchesPossibleWithOutputStorage(stockpile));
-            finalBatchesCount = Math.Min(finalBatchesCount, CalculateMaximumBatchesPossibleWithAvailableInputs(stockpile));
-            finalBatchesCount = Math.Min(finalBatchesCount, CalculateMaximumBatchesPossibleWithCurrentWorkCapacity());
+            finalBatchesCount = Math.Min(finalBatchesCount, CalculateMaximumBatchesPossibleWithOutputStorage(recipeId, stockpile));
+            finalBatchesCount = Math.Min(finalBatchesCount, CalculateMaximumBatchesPossibleWithAvailableInputs(recipeId, stockpile));
+            finalBatchesCount = Math.Min(finalBatchesCount, CalculateMaximumBatchesPossibleWithCurrentWorkCapacity(recipeId));
 
             return finalBatchesCount;
         }
         
-        private long CalculateMaximumBatchesPossibleWithAvailableInputs(CargoAndServices stockpile)
+        private long CalculateMaximumBatchesPossibleWithAvailableInputs(Guid recipeId, CargoAndServices stockpile)
         {
-            var consumptionRequirementsOfOneBatch = GetInputForCount(1);
+            var consumptionRequirementsOfOneBatch = GetInputForCount(recipeId, 1);
             return stockpile.CalculateMaximumBatchesPossibleWithAvailableInputs(consumptionRequirementsOfOneBatch);
         }
 
-        private long CalculateMaximumBatchesPossibleWithOutputStorage(CargoAndServices stockpile)
+        private long CalculateMaximumBatchesPossibleWithOutputStorage(Guid recipeId, CargoAndServices stockpile)
         {
-            var productionResultsOfOneBatch = GetOutputForCount(1);
+            var productionResultsOfOneBatch = GetOutputForCount(recipeId, 1);
             return stockpile.CalculateMaximumBatchesPossibleWithOutputStorage(productionResultsOfOneBatch);
         }
 
-        private long CalculateMaximumBatchesPossibleWithCurrentWorkCapacity()
+        private long CalculateMaximumBatchesPossibleWithCurrentWorkCapacity(Guid recipeId)
         {
-            var workPerBatch = GetRecipe().WorkRequired;
+            var workPerBatch = GetRecipe(recipeId).WorkRequired;
             if (workPerBatch <= 0)
                 return long.MaxValue;
 

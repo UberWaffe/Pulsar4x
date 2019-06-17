@@ -289,6 +289,34 @@ namespace Pulsar4X.Tests
         }
 
         [Test]
+        public void IndustryProcessor_SingleSector_When_ProcessingRecipes_Should_ProcessInOrderOfPriority()
+        {
+            var cookies = SetupCookieTradeGood();
+            var flour = SetupFlourTradeGood();
+
+            var tradeGoodsDefinitions = new TradeGoodLibrary(new List<TradeGoodSD>() { cookies, flour });
+
+            var doubleBakery = SetupDoubleBakeryIndustry(cookies, flour);
+
+            var doubleBakerySector = new IndustrySector(doubleBakery, 1);
+
+            var cookiePile = new CargoAndServices(tradeGoodsDefinitions);
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(flour.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+            cookiePile.AvailableCargo.StoredCargoTypes.Add(cookies.CargoTypeID, new CargoTypeStore() { MaxCapacityKg = 9999999999999, FreeCapacityKg = 9999999999999 });
+
+            StorageSpaceProcessor.AddCargo(cookiePile.AvailableCargo, flour, 8);
+
+            cookiePile = doubleBakerySector.ProcessBatches(cookiePile, tradeGoodsDefinitions);
+            Assert.AreEqual(0, doubleBakerySector.RemainingWorkCapacity);
+
+            var finalHasCheck = new Dictionary<ICargoable, int>
+            {
+                { cookies, (1000 * 8) + (100 * 2) }
+            };
+            Assert.IsTrue(CargoHasExactNumbers(cookiePile.AvailableCargo, finalHasCheck));
+        }
+
+        [Test]
         public void IndustryProcessor_SingleSector_When_ProcessingMultipleDifferentBatchesAndHasWorkCapacity_Should_OutputTheCorrectResulstFromAllRecipes()
         {
             Assert.Fail();
@@ -297,8 +325,6 @@ namespace Pulsar4X.Tests
         [Test]
         public void IndustryProcessor_AllSectors_When_Processing_Should_ProcessRecipeMultipleTimesAccordingToCount()
         {
-            Entity colonyEntity = Entity.Create(_game.GlobalManager, _faction.Guid);
-
             var goodsLibrary = new TradeGoodLibrary(SetupStandardTradeGoods());
             var colonyStorage = SetupPlanetaryCargo(goodsLibrary);
             var industryLibrary = SetupStandardIndustries(goodsLibrary);
@@ -611,7 +637,7 @@ namespace Pulsar4X.Tests
             var recipeResult = new BatchTradeGoods();
             recipeResult.AddTradeGood(cookies, 1);
 
-            var clickedCookieRecipe = new BatchRecipe("1", new BatchTradeGoods(), recipeResult);
+            var clickedCookieRecipe = new BatchRecipe(Guid.NewGuid(), "1", new BatchTradeGoods(), recipeResult);
 
             var cookieClickery = new IndustrySD
             {
@@ -619,7 +645,7 @@ namespace Pulsar4X.Tests
                 Description = "It is like a bakery, but with less flour and more eldritch horrors.",
                 ID = Guid.NewGuid(),
                 WorkCapacity = 1,
-                BatchRecipe = clickedCookieRecipe
+                BatchRecipes = new List<BatchRecipe>() { clickedCookieRecipe }
             };
 
             return cookieClickery;
@@ -633,7 +659,7 @@ namespace Pulsar4X.Tests
             var recipeResult = new BatchTradeGoods();
             recipeResult.AddTradeGood(cookies, 1800);
 
-            var bakedCookieRecipe = new BatchRecipe("1", recipeCost, recipeResult);
+            var bakedCookieRecipe = new BatchRecipe(Guid.NewGuid(), "1", recipeCost, recipeResult);
 
             var bakery = new IndustrySD
             {
@@ -641,7 +667,7 @@ namespace Pulsar4X.Tests
                 Description = "It is like Grandma, but with less wrinkles. Uses flour and spit to make cookies.",
                 ID = Guid.NewGuid(),
                 WorkCapacity = 1,
-                BatchRecipe = bakedCookieRecipe
+                BatchRecipes = new List<BatchRecipe>() { bakedCookieRecipe }
             };
 
             return bakery;
@@ -655,7 +681,7 @@ namespace Pulsar4X.Tests
             var recipeResult = new BatchTradeGoods();
             recipeResult.AddTradeGood(cookies, 2700);
 
-            var bakedCookieRecipe = new BatchRecipe("1", recipeCost, recipeResult, 999, 5);
+            var bakedCookieRecipe = new BatchRecipe(Guid.NewGuid(), "1", recipeCost, recipeResult, 999, 5);
 
             var bakery = new IndustrySD
             {
@@ -663,7 +689,34 @@ namespace Pulsar4X.Tests
                 Description = "It is like Grandma, but with less wrinkles. Uses flour and spit to slow bake cookies.",
                 ID = Guid.NewGuid(),
                 WorkCapacity = 57,
-                BatchRecipe = bakedCookieRecipe
+                BatchRecipes = new List<BatchRecipe>() { bakedCookieRecipe }
+            };
+
+            return bakery;
+        }
+
+        private IndustrySD SetupDoubleBakeryIndustry(TradeGoodSD cookies, TradeGoodSD flour)
+        {
+            var recipeCost = new BatchTradeGoods();
+            recipeCost.AddTradeGood(flour, 1);
+
+            var recipeResult = new BatchTradeGoods();
+            recipeResult.AddTradeGood(cookies, 1000);
+
+            var bakedCookieRecipe = new BatchRecipe(Guid.NewGuid(), "1", recipeCost, recipeResult, 2);
+            
+            recipeResult = new BatchTradeGoods();
+            recipeResult.AddTradeGood(cookies, 100);
+
+            var magicCookieRecipe = new BatchRecipe(Guid.NewGuid(), "2", new BatchTradeGoods(), recipeResult, 1);
+
+            var bakery = new IndustrySD
+            {
+                Name = "Cookie Flexi Bakery",
+                Description = "Bakes large amounts of cookies from flour, or small amounts of cookies from nothing.",
+                ID = Guid.NewGuid(),
+                WorkCapacity = 10,
+                BatchRecipes = new List<BatchRecipe>() { bakedCookieRecipe, magicCookieRecipe }
             };
 
             return bakery;
@@ -683,7 +736,7 @@ namespace Pulsar4X.Tests
             var recipeResult = new BatchTradeGoods();
             recipeResult.AddTradeGood(theGoods.GetTradeGood("Materials"), 100);
 
-            var materialsRecipe = new BatchRecipe("MaterialsFromElements", recipeCost, recipeResult, 950);
+            var materialsRecipe = new BatchRecipe(Guid.NewGuid(), "MaterialsFromElements", recipeCost, recipeResult, 950);
 
             result.Add(materialsRecipe);
 
@@ -696,7 +749,7 @@ namespace Pulsar4X.Tests
             recipeResult.AddTradeGood(theGoods.GetTradeGood("Common N-Elements"), 98);
             recipeResult.AddTradeGood(theGoods.GetTradeGood("Rare N-Elements"), 2);
 
-            materialsRecipe = new BatchRecipe("RecyclingNelementsFromWaste", recipeCost, recipeResult, 1000);
+            materialsRecipe = new BatchRecipe(Guid.NewGuid(), "RecyclingNelementsFromWaste", recipeCost, recipeResult, 1000);
 
             result.Add(materialsRecipe);
 
@@ -708,7 +761,7 @@ namespace Pulsar4X.Tests
             recipeResult = new BatchTradeGoods();
             recipeResult.AddTradeGood(theGoods.GetTradeGood("Technology"), 100);
 
-            materialsRecipe = new BatchRecipe("Technology", recipeCost, recipeResult, 900);
+            materialsRecipe = new BatchRecipe(Guid.NewGuid(), "Technology", recipeCost, recipeResult, 900);
 
             result.Add(materialsRecipe);
 
@@ -722,7 +775,7 @@ namespace Pulsar4X.Tests
             recipeResult = new BatchTradeGoods();
             recipeResult.AddTradeGood(theGoods.GetTradeGood("Consumer Goods"), 100);
 
-            materialsRecipe = new BatchRecipe("ConsumerGoods", recipeCost, recipeResult, 890);
+            materialsRecipe = new BatchRecipe(Guid.NewGuid(), "ConsumerGoods", recipeCost, recipeResult, 890);
 
             result.Add(materialsRecipe);
 
@@ -736,7 +789,7 @@ namespace Pulsar4X.Tests
             recipeResult = new BatchTradeGoods();
             recipeResult.AddTradeGood(theGoods.GetTradeGood("Luxuries"), 100);
 
-            materialsRecipe = new BatchRecipe("Luxuries", recipeCost, recipeResult, 880);
+            materialsRecipe = new BatchRecipe(Guid.NewGuid(), "Luxuries", recipeCost, recipeResult, 880);
 
             result.Add(materialsRecipe);
 
@@ -750,7 +803,7 @@ namespace Pulsar4X.Tests
             recipeResult = new BatchTradeGoods();
             recipeResult.AddTradeGood(theGoods.GetTradeGood("Art and Artifacts"), 100);
 
-            materialsRecipe = new BatchRecipe("ArtworkAndCreativeWorks", recipeCost, recipeResult, 870);
+            materialsRecipe = new BatchRecipe(Guid.NewGuid(), "ArtworkAndCreativeWorks", recipeCost, recipeResult, 870);
 
             result.Add(materialsRecipe);
 
@@ -770,7 +823,7 @@ namespace Pulsar4X.Tests
                 Description = "Processes common N-Elements and rare N-Elements into Materials.",
                 ID = Guid.NewGuid(),
                 WorkCapacity = 1,
-                BatchRecipe = recipes.Get("MaterialsFromElements"),
+                BatchRecipes = new List<BatchRecipe>() { recipes.Get("MaterialsFromElements") },
                 Priority = 950
             };
 
@@ -784,7 +837,7 @@ namespace Pulsar4X.Tests
                 Description = "Recycles waste back into the constituent common and rare N-Elements.",
                 ID = Guid.NewGuid(),
                 WorkCapacity = 1,
-                BatchRecipe = recipes.Get("RecyclingNelementsFromWaste"),
+                BatchRecipes = new List<BatchRecipe>() { recipes.Get("RecyclingNelementsFromWaste") },
                 Priority = 1000
             };
 
@@ -798,7 +851,7 @@ namespace Pulsar4X.Tests
                 Description = "Manufactures technology and components.",
                 ID = Guid.NewGuid(),
                 WorkCapacity = 1,
-                BatchRecipe = recipes.Get("Technology"),
+                BatchRecipes = new List<BatchRecipe>() { recipes.Get("Technology") },
                 Priority = 900
             };
 
@@ -812,7 +865,7 @@ namespace Pulsar4X.Tests
                 Description = "Manufactures consumer goods for use by the general populace.",
                 ID = Guid.NewGuid(),
                 WorkCapacity = 1,
-                BatchRecipe = recipes.Get("ConsumerGoods"),
+                BatchRecipes = new List<BatchRecipe>() { recipes.Get("ConsumerGoods") },
                 Priority = 890
             };
 
@@ -877,7 +930,7 @@ namespace Pulsar4X.Tests
             var recipeResult = new BatchTradeGoods();
             recipeResult.ChangeService(theInternet, 357);
 
-            var internetHosting = new BatchRecipe("1", new BatchTradeGoods(), recipeResult);
+            var internetHosting = new BatchRecipe(Guid.NewGuid(), "1", new BatchTradeGoods(), recipeResult);
 
             var isp = new IndustrySD
             {
@@ -885,7 +938,7 @@ namespace Pulsar4X.Tests
                 Description = "Converts electricity to heat using transistors and charges you for it.",
                 ID = Guid.NewGuid(),
                 WorkCapacity = 1,
-                BatchRecipe = internetHosting
+                BatchRecipes = new List<BatchRecipe>() { internetHosting }
             };
 
             return isp;
@@ -899,7 +952,7 @@ namespace Pulsar4X.Tests
             var recipeResult = new BatchTradeGoods();
             recipeResult.ChangeService(financials, 10);
 
-            var financialTransactions = new BatchRecipe("1", recipeCost, recipeResult);
+            var financialTransactions = new BatchRecipe(Guid.NewGuid(), "1", recipeCost, recipeResult);
 
             var theBanks = new IndustrySD
             {
@@ -907,7 +960,7 @@ namespace Pulsar4X.Tests
                 Description = "Moves digital numbers around. Apparently very important.",
                 ID = Guid.NewGuid(),
                 WorkCapacity = 1,
-                BatchRecipe = financialTransactions
+                BatchRecipes = new List<BatchRecipe>() { financialTransactions }
             };
 
             return theBanks;
