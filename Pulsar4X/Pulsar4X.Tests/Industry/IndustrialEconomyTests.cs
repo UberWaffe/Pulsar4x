@@ -414,7 +414,7 @@ namespace Pulsar4X.Tests
         }
 
         [Test]
-        public void IndustryProcessor_AllSectors_When_Processing_Should_AttemptToUseAllAvailableWorkCapacity()
+        public void IndustryProcessor_AllSectors_When_ProcessingAndHasWorkCapacityLeft_Should_IterateSectorsAgainAndTryToUseAllOfIt()
         {
             Assert.Fail();
         }

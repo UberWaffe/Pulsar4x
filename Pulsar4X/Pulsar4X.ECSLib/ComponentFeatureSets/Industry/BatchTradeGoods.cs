@@ -5,7 +5,7 @@ namespace Pulsar4X.ECSLib
 {
     public class BatchTradeGoods
     {
-        public Dictionary<Guid, long> Items { get; private set;  } = new Dictionary<Guid, long>();
+        public Dictionary<Guid, long> Items { get; private set; } = new Dictionary<Guid, long>();
         public Dictionary<Guid, long> Services { get; private set; } = new Dictionary<Guid, long>();
 
         public BatchTradeGoods()
