@@ -374,10 +374,10 @@ namespace Pulsar4X.Tests
                 double ke_a = ke.SemiMajorAxis;
                 double ke_e = ke.Eccentricity;
                 double ke_i = ke.Inclination;
-                double ke_Ω = ke.LoAN;
+                double ke_Ω = ke.LongdOfAN;
                 double ke_M0 = ke.MeanAnomalyAtEpoch;
                 double ke_n = ke.MeanMotion;
-                double ke_ω = ke.AoP;
+                double ke_ω = ke.ArgumentOfPeriapsis;
 
                 double ke_E = OrbitMath.GetEccentricAnomalyNewtonsMethod(ke.Eccentricity, ke_M0);
                 double ke_ν = OrbitMath.TrueAnomalyFromEccentricAnomaly(ke_e, ke_E);

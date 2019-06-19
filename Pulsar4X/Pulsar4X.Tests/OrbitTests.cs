@@ -192,11 +192,42 @@ namespace Pulsar4X.Tests
         {
             double parentMass = 1.989e30;
             double objMass = 10000;
+			
+            // To help visualize vectors, a useful tool at : https://academo.org/demos/3d-vector-plotter/
+            // To determine what the Kepler Elements should be, use : http://orbitsimulator.com/formulas/OrbitalElements.html
             Vector3 position = new Vector3() { X = 0.25, Y = 0.25 };
             Vector3 velocity = new Vector3() { X = Distance.KmToAU(0), Y = Distance.KmToAU(1) }; //passes
+            var expectedKeplerResult = new KeplerElements()
+            {
+                SemiMajorAxis = Distance.MToAU(26450687774.528255),
+                Eccentricity = 0.9998007596175803,
+                Inclination = Angle.ToRadians(0.0),
+                LongdOfAN = 0.0,
+                ArgumentOfPeriapsis = Angle.ToRadians(225.01141904591285),
+                MeanAnomalyAtEpoch = Angle.ToRadians(177.71233527026365),
+                TrueAnomalyAtEpoch = Angle.ToRadians(179.98858095408718),
+                Periapsis = Distance.MToAU(5270045.1474609375),
+                Apoapsis = Distance.MToAU(52896105503.90905)
+            };
+            var calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
+            Assert.IsTrue(TestKeplerOrbitSpecificResult(calculatedKepler, expectedKeplerResult));
             TestOrbitDBFromVectors(parentMass, objMass, position, velocity);
 
             velocity = new Vector3() { X = Distance.KmToAU(0), Y = -Distance.KmToAU(2) }; //fails
+            expectedKeplerResult = new KeplerElements()
+            {
+                SemiMajorAxis = Distance.MToAU(26466512098.241333),
+                Eccentricity = 0.999203276935673,
+                Inclination = Angle.ToRadians(180.00000000000017),
+                LongdOfAN = 45.00000153199437,
+                ArgumentOfPeriapsis = Angle.ToRadians(179.95429650816112),
+                MeanAnomalyAtEpoch = Angle.ToRadians(184.57578603454385),
+                TrueAnomalyAtEpoch = Angle.ToRadians(180.04570350068457),
+                Periapsis = Distance.MToAU(21086480.62095642),
+                Apoapsis = Distance.MToAU(52911937715.861725)
+            };
+            calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
+            Assert.IsTrue(TestKeplerOrbitSpecificResult(calculatedKepler, expectedKeplerResult));
             TestOrbitDBFromVectors(parentMass, objMass, position, velocity);
 
             velocity = new Vector3() { X = Distance.KmToAU(1), Y = Distance.KmToAU(0) }; //fails
@@ -205,6 +236,31 @@ namespace Pulsar4X.Tests
             velocity = new Vector3() { X = -Distance.KmToAU(1), Y = Distance.KmToAU(0) }; //fails
             TestOrbitDBFromVectors(parentMass, objMass, position, velocity);
 
+        }
+
+        public KeplerElements CalculateKeplerOrbitElements(double parentMass, double objMass, Vector4 position, Vector4 velocity)
+        {
+            double sgp = OrbitMath.CalculateStandardGravityParameter(parentMass, objMass);
+            KeplerElements ke = OrbitMath.KeplerFromPositionAndVelocity(sgp, position, velocity, new DateTime());
+            
+            return ke;
+        }
+
+        public bool TestKeplerOrbitSpecificResult(KeplerElements keplerResults, KeplerElements expectedKeplerResults)
+        {
+            var requiredAccuracy = 0.01; //0.0000000001
+            Assert.AreEqual(expectedKeplerResults.SemiMajorAxis, keplerResults.SemiMajorAxis, requiredAccuracy); //a
+            Assert.AreEqual(expectedKeplerResults.Eccentricity, keplerResults.Eccentricity, requiredAccuracy); //e
+            Assert.AreEqual(expectedKeplerResults.Inclination, keplerResults.Inclination, requiredAccuracy); //i
+            Assert.AreEqual(expectedKeplerResults.LongdOfAN, keplerResults.LongdOfAN, requiredAccuracy); //Ω
+            Assert.AreEqual(expectedKeplerResults.ArgumentOfPeriapsis, keplerResults.ArgumentOfPeriapsis, requiredAccuracy); //ω
+            // Assert.AreEqual(expectedKeplerResults.MeanMotion, keplerResults.MeanMotion, requiredAccuracy); //n
+            Assert.AreEqual(expectedKeplerResults.MeanAnomalyAtEpoch, keplerResults.MeanAnomalyAtEpoch, requiredAccuracy); //M0
+            Assert.AreEqual(expectedKeplerResults.TrueAnomalyAtEpoch, keplerResults.TrueAnomalyAtEpoch, requiredAccuracy); //v
+            Assert.AreEqual(expectedKeplerResults.Periapsis, keplerResults.Periapsis, requiredAccuracy); //q
+            Assert.AreEqual(expectedKeplerResults.Apoapsis, keplerResults.Apoapsis, requiredAccuracy); //Q
+
+            return false;
         }
 
         public void TestOrbitDBFromVectors(double parentMass, double objMass, Vector3 position, Vector3 velocity)
@@ -228,13 +284,13 @@ namespace Pulsar4X.Tests
 
             //check LoAN
             var objLoAN = Angle.ToRadians(objOrbit.LongitudeOfAscendingNode);
-            var keLoAN = ke.LoAN;
+            var keLoAN = ke.LongdOfAN;
             var loANDifference = objLoAN - keLoAN;
             Assert.AreEqual(keLoAN, objLoAN, angleΔ);
 
             //check AoP
             var objAoP = Angle.ToRadians(objOrbit.ArgumentOfPeriapsis);
-            var keAoP = ke.AoP;
+            var keAoP = ke.ArgumentOfPeriapsis;
             var difference = objAoP - keAoP;
             Assert.AreEqual(keAoP, objAoP, angleΔ);
 
@@ -252,7 +308,7 @@ namespace Pulsar4X.Tests
 
             //check EccentricAnomaly:
             var objE = (OrbitProcessor.GetEccentricAnomaly(objOrbit, objOrbit.MeanAnomalyAtEpoch));
-            var keE =   (OrbitMath.GetEccentricAnomalyFromStateVectors(position, ke.SemiMajorAxis, ke.LinierEccentricity, ke.AoP));
+            var keE =   (OrbitMath.GetEccentricAnomalyFromStateVectors(position, ke.SemiMajorAxis, ke.LinierEccentricity, ke.ArgumentOfPeriapsis));
             if (objE != keE)
             {
                 var dif = objE - keE;
@@ -319,7 +375,7 @@ namespace Pulsar4X.Tests
 
             double keslr = EllipseMath.SemiLatusRectum(ke.SemiMajorAxis, ke.Eccentricity);
             double keradius = OrbitMath.RadiusAtAngle(ke.TrueAnomalyAtEpoch, keslr, ke.Eccentricity);
-            Vector3 kemathPos = OrbitMath.GetRalitivePosition(ke.LoAN, ke.AoP, ke.Inclination, ke.TrueAnomalyAtEpoch, keradius);
+            Vector3 kemathPos = OrbitMath.GetRalitivePosition(ke.LongdOfAN, ke.ArgumentOfPeriapsis, ke.Inclination, ke.TrueAnomalyAtEpoch, keradius);
             Vector3 kemathPosKM = Distance.AuToKm(kemathPos);
             Assert.AreEqual(kemathPosKM.Length(), posKM.Length(), 0.01);
 
@@ -338,7 +394,7 @@ namespace Pulsar4X.Tests
             //var speedVectorAU2 = OrbitProcessor.PreciseOrbitalVector(objOrbit, new DateTime());
             //Assert.AreEqual(speedVectorAU, speedVectorAU2);
 
-    }
+        }
 
 
         [Test]

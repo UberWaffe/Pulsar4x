@@ -15,8 +15,8 @@ namespace Pulsar4X.ECSLib
         public double LinierEccentricity;   //ae
         public double Periapsis;            //q
         public double Apoapsis;             //Q
-        public double LoAN;                 //Ω (upper case Omega)
-        public double AoP;                  //ω (lower case omega)
+        public double LongdOfAN;                 //Ω (upper case Omega)
+        public double ArgumentOfPeriapsis;       //ω (lower case omega)
         public double Inclination;          //i
         public double MeanMotion;           //n
         public double MeanAnomalyAtEpoch;   //M0
@@ -37,6 +37,7 @@ namespace Pulsar4X.ECSLib
 
         /// <summary>
         /// Kepler elements from velocity and position.
+        /// https://github.com/RazerM/orbital/blob/0.7.0/orbital/utilities.py#L284
         /// </summary>
         /// <returns>a struct of Kepler elements.</returns>
         /// <param name="standardGravParam">Standard grav parameter.</param>
@@ -45,10 +46,11 @@ namespace Pulsar4X.ECSLib
         public static KeplerElements KeplerFromPositionAndVelocity(double standardGravParam, Vector3 position, Vector3 velocity, DateTime epoch)
         {
             KeplerElements ke = new KeplerElements();
+			
             Vector3 angularVelocity = CalculateAngularMomentum(position, velocity);
             Vector3 nodeVector = CalculateNode(angularVelocity);
+			
             Vector3 eccentVector = EccentricityVector(standardGravParam, position, velocity);
-
             double eccentricity = eccentVector.Length();
 
             double specificOrbitalEnergy = Math.Pow(velocity.Length(),2) * 0.5 - standardGravParam / position.Length();
@@ -71,20 +73,7 @@ namespace Pulsar4X.ECSLib
                 p = angularVelocity.Length() * angularVelocity.Length() / standardGravParam;
                 semiMajorAxis = double.MaxValue;
             }
-
-            /*
-            if (Math.Abs(eccentricity - 1.0) > 1e-15)
-            {
-                semiMajorAxis = -standardGravParam / (2 * specificOrbitalEnergy);
-                p = semiMajorAxis * (1 - eccentricity * eccentricity);
-            }
-            else //parabola
-            {
-                p = angularVelocity.Length() * angularVelocity.Length() / standardGravParam;
-                semiMajorAxis = double.MaxValue;
-            }
-*/
-
+            
             double semiMinorAxis = EllipseMath.SemiMinorAxis(semiMajorAxis, eccentricity);
             double linierEccentricity = eccentricity * semiMajorAxis;
 
@@ -119,8 +108,8 @@ namespace Pulsar4X.ECSLib
             ke.Apoapsis = EllipseMath.Apoapsis(eccentricity, semiMajorAxis);
             ke.Periapsis = EllipseMath.Periapsis(eccentricity, semiMajorAxis);
             ke.LinierEccentricity = EllipseMath.LinierEccentricity(ke.Apoapsis, semiMajorAxis);
-            ke.LoAN = longdOfAN;
-            ke.AoP = argOfPeriaps;
+            ke.LongdOfAN = longdOfAN;
+            ke.ArgumentOfPeriapsis = argOfPeriaps;
             ke.Inclination = inclination;
             ke.MeanMotion = meanMotion;
             ke.MeanAnomalyAtEpoch = meanAnomaly;

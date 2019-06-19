@@ -137,8 +137,8 @@ namespace Pulsar4X.ECSLib
                         Math.Abs(ke.SemiMajorAxis),
                         ke.Eccentricity,
                         Angle.ToDegrees(ke.Inclination),
-                        Angle.ToDegrees(ke.LoAN),
-                        Angle.ToDegrees(ke.AoP),
+                        Angle.ToDegrees(ke.LongdOfAN),
+                        Angle.ToDegrees(ke.ArgumentOfPeriapsis),
                         Angle.ToDegrees(ke.MeanAnomalyAtEpoch),
                         epoch);
 
@@ -174,8 +174,8 @@ namespace Pulsar4X.ECSLib
                         ke.SemiMajorAxis,
                         ke.Eccentricity,
                         Angle.ToDegrees(ke.Inclination),
-                        Angle.ToDegrees(ke.LoAN),
-                        Angle.ToDegrees(ke.AoP),
+                        Angle.ToDegrees(ke.LongdOfAN),
+                        Angle.ToDegrees(ke.ArgumentOfPeriapsis),
                         Angle.ToDegrees(ke.MeanAnomalyAtEpoch),
                         atDateTime);// - TimeSpan.FromSeconds(ke.Epoch));
             var pos = OrbitProcessor.GetAbsolutePosition_AU(orbit, atDateTime);
@@ -193,8 +193,8 @@ namespace Pulsar4X.ECSLib
                         Distance.KmToAU(ke.SemiMajorAxis),
                         ke.Eccentricity,
                         Angle.ToDegrees(ke.Inclination),
-                        Angle.ToDegrees(ke.LoAN),
-                        Angle.ToDegrees(ke.AoP),
+                        Angle.ToDegrees(ke.LongdOfAN),
+                        Angle.ToDegrees(ke.ArgumentOfPeriapsis),
                         Angle.ToDegrees(ke.MeanAnomalyAtEpoch),
                         atDateTime);// - TimeSpan.FromSeconds(ke.Epoch));
             var pos = OrbitProcessor.GetAbsolutePosition_AU(orbit, atDateTime);
@@ -208,8 +208,8 @@ namespace Pulsar4X.ECSLib
                        ke.SemiMajorAxis,
                        ke.Eccentricity,
                        Angle.ToDegrees(ke.Inclination),
-                       Angle.ToDegrees(ke.LoAN),
-                       Angle.ToDegrees(ke.AoP),
+                       Angle.ToDegrees(ke.LongdOfAN),
+                       Angle.ToDegrees(ke.ArgumentOfPeriapsis),
                        Angle.ToDegrees(ke.MeanAnomalyAtEpoch),
                        ke.Epoch);// - TimeSpan.FromSeconds(ke.Epoch));
             //var pos = OrbitProcessor.GetAbsolutePosition_AU(orbit, atDateTime);

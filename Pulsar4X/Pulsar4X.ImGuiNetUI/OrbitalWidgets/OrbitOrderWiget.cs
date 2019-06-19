@@ -170,17 +170,17 @@ namespace Pulsar4X.SDL2UI
             if (ke.Inclination > Math.PI * 0.5 && ke.Inclination < Math.PI * 1.5) //ke inclination is in radians.
             {
                 IsClockwiseOrbit = false;
-                OrbitAngleRadians = ke.LoAN - ke.AoP;
+                OrbitAngleRadians = ke.LongdOfAN - ke.ArgumentOfPeriapsis;
             }
             else
             {
                 IsClockwiseOrbit = true;
-                OrbitAngleRadians = ke.LoAN + ke.AoP;
+                OrbitAngleRadians = ke.LongdOfAN + ke.ArgumentOfPeriapsis;
             }
             _position = position;
 
-            _loAN = ke.LoAN;
-            _aoP = ke.AoP;
+            _loAN = ke.LongdOfAN;
+            _aoP = ke.ArgumentOfPeriapsis;
             _trueAnomaly = ke.TrueAnomalyAtEpoch;
             OnPhysicsUpdate();
         }

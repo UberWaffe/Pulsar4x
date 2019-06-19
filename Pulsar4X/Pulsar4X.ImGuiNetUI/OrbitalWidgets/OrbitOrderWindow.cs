@@ -430,15 +430,15 @@ namespace Pulsar4X.SDL2UI
 
                     ImGui.Text("LoAN: ");
                     ImGui.SameLine();
-                    ImGui.Text(_ke.LoAN.ToString("g3"));
+                    ImGui.Text(_ke.LongdOfAN.ToString("g3"));
 
                     ImGui.Text("AoP: ");
                     ImGui.SameLine();
-                    ImGui.Text(_ke.AoP.ToString("g3"));
+                    ImGui.Text(_ke.ArgumentOfPeriapsis.ToString("g3"));
 
                     ImGui.Text("LoP Angle: ");
                     ImGui.SameLine();
-                    ImGui.Text((_ke.LoAN + _ke.AoP).ToString("g3") + " radians or " + Angle.ToDegrees(_ke.LoAN + _ke.AoP).ToString("F") + " deg ");
+                    ImGui.Text((_ke.LongdOfAN + _ke.ArgumentOfPeriapsis).ToString("g3") + " radians or " + Angle.ToDegrees(_ke.LongdOfAN + _ke.ArgumentOfPeriapsis).ToString("F") + " deg ");
 
                     if(_orbitWidget != null)
                         ImGui.Text("Clockwise " +  _orbitWidget.IsClockwiseOrbit.ToString());
