@@ -131,7 +131,7 @@ namespace Pulsar4X.SDL2UI
             CurrentState = States.NeedsTarget;
             _massCurrentBody = _orderEntityOrbit.Parent.GetDataBlob<MassVolumeDB>().Mass;
             _massOrderingEntity = OrderingEntity.Entity.GetDataBlob<MassVolumeDB>().Mass;
-            _stdGravParamCurrentBody = GameConstants.Science.GravitationalConstant * (_massCurrentBody + _massOrderingEntity) / 3.347928976e33;
+            _stdGravParamCurrentBody = OrbitMath.CalculateStandardGravityParameter(_massCurrentBody, _massOrderingEntity);
             if (_moveWidget == null)
             {
                 _moveWidget = new TranslateMoveOrderWidget(_state, OrderingEntity.Entity);
@@ -163,7 +163,7 @@ namespace Pulsar4X.SDL2UI
 
 
             _massTargetBody = TargetEntity.Entity.GetDataBlob<MassVolumeDB>().Mass;
-            _stdGravParamTargetBody = GameConstants.Science.GravitationalConstant * (_massTargetBody + _massOrderingEntity) / 3.347928976e33;
+            _stdGravParamTargetBody = OrbitMath.CalculateStandardGravityParameter(_massTargetBody, _massOrderingEntity);
             InsertionCalcs();
 
 
@@ -515,13 +515,6 @@ namespace Pulsar4X.SDL2UI
             _insertionOrbitalSpeed = _insertionOrbitalVelocity.Length();
             _insertionAngle = Math.Atan2(_insertionOrbitalVelocity.Y, _insertionOrbitalVelocity.X);
             _moveWidget.SetArivalProgradeAngle(_insertionAngle);
-
-            /*
-            var sgpCBAU = GameConstants.Science.GravitationalConstant * (_massCurrentBody + _massOrderingEntity) / 3.347928976e33;// (149597870700 * 149597870700 * 149597870700);
-            var ralPosCBAU = OrderingEntity.Entity.GetDataBlob<PositionDB>().RelativePosition_AU;
-            var smaCurrOrbtAU = OrderingEntity.Entity.GetDataBlob<OrbitDB>().SemiMajorAxis;
-            var velAU = OrbitProcessor.PreciseOrbitalVector(sgpCBAU, ralPosCBAU, smaCurrOrbtAU);
-            */
         }
 
 

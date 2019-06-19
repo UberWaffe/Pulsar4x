@@ -352,7 +352,7 @@ namespace Pulsar4X.SDL2UI
                                         var pmass = parent.GetDataBlob<MassVolumeDB>().Mass;
                                         var mymass = _selectedEntity.GetDataBlob<MassVolumeDB>().Mass;
 
-                                        var sgp = GameConstants.Science.GravitationalConstant * (pmass + mymass) / 3.347928976e33;
+                                        var sgp = OrbitMath.CalculateStandardGravityParameter(pmass, mymass);
                                         var vel = Distance.KmToAU(cnmve.CurrentVector_kms);
                                         var cpos = myPos.RelativePosition_AU;
                                         var eccentVector = OrbitMath.EccentricityVector(sgp, cpos, vel);

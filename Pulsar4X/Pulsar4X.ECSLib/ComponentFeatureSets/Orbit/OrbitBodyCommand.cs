@@ -136,8 +136,7 @@ namespace Pulsar4X.ECSLib
                 OrbitDB orbitDB = _entityCommanding.GetDataBlob<OrbitDB>();
                 Vector3 currentPos = OrbitProcessor.GetAbsolutePosition_AU(orbitDB, TransitStartDateTime);
                 var ralPos = OrbitProcessor.GetPosition_AU(orbitDB, TransitStartDateTime);
-                var masses = _entityCommanding.GetDataBlob<MassVolumeDB>().Mass + orbitDB.Parent.GetDataBlob<MassVolumeDB>().Mass;
-                var sgp = GameConstants.Science.GravitationalConstant * masses / 3.347928976e33;
+                var sgp = OrbitMath.CalculateStandardGravityParameter(_entityCommanding.GetDataBlob<MassVolumeDB>().Mass, orbitDB.Parent.GetDataBlob<MassVolumeDB>().Mass);
 
                 //Vector4 currentVec = OrbitProcessor.PreciseOrbitalVector(sgp, ralPos, orbitDB.SemiMajorAxis);
                 Vector2 currentVec = OrbitProcessor.GetOrbitalVector(orbitDB, TransitStartDateTime);

@@ -45,12 +45,9 @@ namespace Pulsar4X.ECSLib
         public static KeplerElements KeplerFromPositionAndVelocity(double standardGravParam, Vector3 position, Vector3 velocity, DateTime epoch)
         {
             KeplerElements ke = new KeplerElements();
-            Vector3 angularVelocity = Vector3.Cross(position, velocity);
-            Vector3 nodeVector = Vector3.Cross(new Vector3(0, 0, 1), angularVelocity);
-
+            Vector3 angularVelocity = CalculateAngularMomentum(position, velocity);
+            Vector3 nodeVector = CalculateNode(angularVelocity);
             Vector3 eccentVector = EccentricityVector(standardGravParam, position, velocity);
-
-            //Vector4 eccentVector2 = EccentricityVector2(standardGravParam, position, velocity);
 
             double eccentricity = eccentVector.Length();
 
@@ -133,6 +130,38 @@ namespace Pulsar4X.ECSLib
 
             return ke;
         }
+
+        #region Vector Calculations
+        public static Vector4 CalculateAngularMomentum(Vector4 position, Vector4 velocity)
+        {
+            /*
+            * position vector       km
+            * velocity              km/sec
+            */
+            return Vector4.Cross(position, velocity);
+        }
+
+        public static Vector4 CalculateNode(Vector4 angularVelocity)
+        {
+            return Vector4.Cross(new Vector4(0, 0, 1, 0), angularVelocity);
+        }
+
+        public static double CalculateStandardGravityParameter(double orbiterMassInKg, double bodyBeingOrbitedMassInKg)
+        {
+            // https://en.wikipedia.org/wiki/Standard_gravitational_parameter
+            double sgpInM3S2 = GameConstants.Science.GravitationalConstant * (bodyBeingOrbitedMassInKg + orbiterMassInKg);
+            double sgpInKm3S2 = sgpInM3S2 / Math.Pow(GameConstants.Units.KmPerAu, 3);
+            return sgpInKm3S2;
+        }
+
+        public static double CalculateStandardGravityParameterInKm3S2(double orbiterMassInKg, double bodyBeingOrbitedMassInKg)
+        {
+            // https://en.wikipedia.org/wiki/Standard_gravitational_parameter
+            double sgpInM3S2 = GameConstants.Science.GravitationalConstant * (bodyBeingOrbitedMassInKg + orbiterMassInKg);
+            double sgpInKm3S2 = sgpInM3S2 / (1000 * 1000 * 1000);
+            return sgpInKm3S2;
+        }
+        #endregion
 
         #region ArgumentOfPeriapsis
         /*

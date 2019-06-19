@@ -13,7 +13,7 @@ namespace Pulsar4X.ECSLib
         /// </summary>
         public static class Science
         {
-            // Gravitation Constant
+            // Gravitation Constant in m^3.kg^-1.s^-2
             public const double GravitationalConstant = 6.67408E-11;
         }
 

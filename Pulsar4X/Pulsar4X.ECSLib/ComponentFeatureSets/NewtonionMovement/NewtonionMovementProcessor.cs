@@ -109,7 +109,7 @@ namespace Pulsar4X.ECSLib
                         parentRalitiveVector = Distance.KmToAU(newtonMoveDB.CurrentVector_kms + parentVelocity);
                     }
                     double newParentMass = newParent.GetDataBlob<MassVolumeDB>().Mass;
-                    double sgp = GameConstants.Science.GravitationalConstant * (newParentMass + Mass_Kg) / 3.347928976e33;
+                    double sgp = OrbitMath.CalculateStandardGravityParameter(newParentMass, Mass_Kg);
                     Vector3 posRalitiveToNewParent = positionDB.AbsolutePosition_AU - newParent.GetDataBlob<PositionDB>().AbsolutePosition_AU;
 
                     var dateTime = dateTimeNow + TimeSpan.FromSeconds(deltaSeconds - secondsToItterate);

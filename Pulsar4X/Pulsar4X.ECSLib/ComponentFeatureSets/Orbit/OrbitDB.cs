@@ -128,7 +128,7 @@ namespace Pulsar4X.ECSLib
             if (ralitivePos.Length() > OrbitProcessor.GetSOI(parent))
                 throw new Exception("Entity not in target SOI");
 
-            var sgp = GameConstants.Science.GravitationalConstant * (myMass + parentMass) / 3.347928976e33;
+            var sgp = OrbitMath.CalculateStandardGravityParameter(myMass, parentMass);
             var ke = OrbitMath.KeplerFromPositionAndVelocity(sgp, ralitivePos, velocityAU, atDateTime);
 
             var epoch = atDateTime;// - TimeSpan.FromSeconds(ke.Epoch); //ke.Epoch is seconds from periapsis.   
@@ -168,7 +168,7 @@ namespace Pulsar4X.ECSLib
         {
             if (position.Length() > OrbitProcessor.GetSOI(parent))
                 throw new Exception("Entity not in target SOI");
-            //var sgp  = GameConstants.Science.GravitationalConstant * (myMass + parentMass) / 3.347928976e33;
+            //var sgp  = OrbitMath.CalculateStandardGravityParameter(myMass, parentMass);
             var ke = OrbitMath.KeplerFromPositionAndVelocity(sgp, position, velocity, atDateTime);
             OrbitDB orbit = new OrbitDB(parent, parentMass, myMass,
                         ke.SemiMajorAxis,
@@ -187,7 +187,7 @@ namespace Pulsar4X.ECSLib
         {
             if (Distance.KmToAU(position.Length()) > OrbitProcessor.GetSOI(parent))
                 throw new Exception("Entity not in target SOI");
-            //var sgp  = GameConstants.Science.GravitationalConstant * (myMass + parentMass) / 3.347928976e33;
+            //var sgp  = OrbitMath.CalculateStandardGravityParameter(myMass, parentMass);
             var ke = OrbitMath.KeplerFromPositionAndVelocity(sgp, position, velocity, atDateTime);
             OrbitDB orbit = new OrbitDB(parent, parentMass, myMass,
                         Distance.KmToAU(ke.SemiMajorAxis),
@@ -322,8 +322,8 @@ namespace Pulsar4X.ECSLib
             }
             // Calculate extended parameters.
             // http://en.wikipedia.org/wiki/Standard_gravitational_parameter#Two_bodies_orbiting_each_other
-            GravitationalParameter = GameConstants.Science.GravitationalConstant * (_parentMass + _myMass) / (1000 * 1000 * 1000); // Normalize GravitationalParameter from m^3/s^2 to km^3/s^2
-            GravitationalParameterAU = GameConstants.Science.GravitationalConstant * (_parentMass + _myMass) / 3.347928976e33;// (149597870700 * 149597870700 * 149597870700);
+            GravitationalParameter = OrbitMath.CalculateStandardGravityParameterInKm3S2(_parentMass, _myMass);
+            GravitationalParameterAU = OrbitMath.CalculateStandardGravityParameter(_parentMass, _myMass);
             // http://en.wikipedia.org/wiki/Orbital_period#Two_bodies_orbiting_each_other
             double orbitalPeriod = 2 * Math.PI * Math.Sqrt(Math.Pow(Distance.AuToKm(SemiMajorAxis), 3) / (GravitationalParameter));
             if (orbitalPeriod * 10000000 > long.MaxValue)

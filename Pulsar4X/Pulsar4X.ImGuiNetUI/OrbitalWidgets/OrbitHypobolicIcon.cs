@@ -45,7 +45,7 @@ namespace Pulsar4X.SDL2UI
             _userOrbitSettingsMtx = settings;
             var parentMass = entityState.Entity.GetDataBlob<NewtonMoveDB>().ParentMass;
             var myMass = entityState.Entity.GetDataBlob<MassVolumeDB>().Mass;
-            _sgp = GameConstants.Science.GravitationalConstant * (parentMass + myMass) / 3.347928976e33;
+            _sgp = OrbitMath.CalculateStandardGravityParameter(parentMass, myMass);
 
 
             UpdateUserSettings();

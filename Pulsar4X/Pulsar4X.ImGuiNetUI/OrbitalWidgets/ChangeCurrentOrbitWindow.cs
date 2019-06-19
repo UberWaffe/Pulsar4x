@@ -96,7 +96,7 @@ namespace Pulsar4X.SDL2UI
 
             _massParentBody = _orderEntityOrbit.Parent.GetDataBlob<MassVolumeDB>().Mass;
             _massOrderingEntity = OrderingEntity.Entity.GetDataBlob<MassVolumeDB>().Mass;
-            _stdGravParam = GameConstants.Science.GravitationalConstant * (_massParentBody + _massOrderingEntity) / 3.347928976e33;
+            _stdGravParam = OrbitMath.CalculateStandardGravityParameter(_massParentBody, _massOrderingEntity);
 
             _positonAtChange_AU = OrbitProcessor.GetPosition_AU(_orderEntityOrbit, _actionDateTime);
             var velAtChange2d = OrbitProcessor.GetOrbitalVector(_orderEntityOrbit, _actionDateTime);
@@ -183,13 +183,6 @@ namespace Pulsar4X.SDL2UI
             _ke = ke;
 
             _orbitWidget.SetParametersFromKeplerElements(ke, _positonAtChange_AU);
-
-            /*
-            var sgpCBAU = GameConstants.Science.GravitationalConstant * (_massCurrentBody + _massOrderingEntity) / 3.347928976e33;// (149597870700 * 149597870700 * 149597870700);
-            var ralPosCBAU = OrderingEntity.Entity.GetDataBlob<PositionDB>().RelativePosition_AU;
-            var smaCurrOrbtAU = OrderingEntity.Entity.GetDataBlob<OrbitDB>().SemiMajorAxis;
-            var velAU = OrbitProcessor.PreciseOrbitalVector(sgpCBAU, ralPosCBAU, smaCurrOrbtAU);
-            */
         }
 
         internal void CloseWindow()
