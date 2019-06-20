@@ -55,6 +55,33 @@ namespace Pulsar4X.ECSLib
 
     }
 
+    public static class CircleCalculations
+    {
+        public static Vector4 GetPositionOnCircle(Vector4 centerPosition, float radius, float angle)
+        {
+            Vector4 relativePosition = new Vector4(
+                (centerPosition.X + radius * Math.Cos(Angle.ToRadians(angle))),
+                (centerPosition.Y + radius * Math.Sin(Angle.ToRadians(angle))),
+                0,
+                0
+            );
+
+            return relativePosition;
+        }
+
+        public static Vector4 GetCenterOfCircle(Vector4 relativePosition, float radius, float angle)
+        {
+            Vector4 relativeCircleCenter = new Vector4(
+                (relativePosition.X - radius * Math.Cos(Angle.ToRadians(angle))),
+                (relativePosition.Y - radius * Math.Sin(Angle.ToRadians(angle))),
+                0,
+                0
+            );
+
+            return relativeCircleCenter;
+        }
+    }
+
     /// <summary>
     /// Small helper class for Temperature unit conversions
     /// </summary>
