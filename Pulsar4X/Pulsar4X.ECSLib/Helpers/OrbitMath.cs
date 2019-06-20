@@ -34,6 +34,19 @@ namespace Pulsar4X.ECSLib
     /// </summary>
     public class OrbitMath
     {
+        /// <summary>
+        /// Kepler elements from velocity and position.
+        /// </summary>
+        /// <returns>a struct of Kepler elements.</returns>
+        /// <param name="parentMass">Mass of the parent object (kg)</param>
+        /// <param name="objMass">Mass of the orbiting object object (kg)</param>
+        /// <param name="position">Position ralitive to parent (Km)</param>
+        /// <param name="velocity">Velocity ralitive to parent (Km)</param>
+        public static KeplerElements KeplerFromPositionAndVelocity(double parentMass, double objMass, Vector3 position, Vector3 velocity, DateTime epoch)
+        {
+            double standardGravParam = OrbitMath.CalculateStandardGravityParameterInKm3S2(parentMass, objMass);
+            return KeplerFromPositionAndVelocity(standardGravParam, position, velocity, epoch);
+        }
 
         /// <summary>
         /// Kepler elements from velocity and position.
@@ -41,8 +54,8 @@ namespace Pulsar4X.ECSLib
         /// </summary>
         /// <returns>a struct of Kepler elements.</returns>
         /// <param name="standardGravParam">Standard grav parameter.</param>
-        /// <param name="position">Position ralitive to parent</param>
-        /// <param name="velocity">Velocity ralitive to parent</param>
+        /// <param name="position">Position ralitive to parent (Km)</param>
+        /// <param name="velocity">Velocity ralitive to parent (Km)</param>
         public static KeplerElements KeplerFromPositionAndVelocity(double standardGravParam, Vector3 position, Vector3 velocity, DateTime epoch)
         {
             KeplerElements ke = new KeplerElements();
@@ -227,8 +240,8 @@ namespace Pulsar4X.ECSLib
         /// </summary>
         /// <returns>The vector.</returns>
         /// <param name="sgp">StandardGravParam.</param>
-        /// <param name="position">Position, ralitive to parent.</param>
-        /// <param name="velocity">Velocity, ralitive to parent.</param>
+        /// <param name="position">Position, ralitive to parent (Km)</param>
+        /// <param name="velocity">Velocity, ralitive to parent (Km)</param>
         public static Vector3 EccentricityVector(double sgp, Vector3 position, Vector3 velocity)
         {
             Vector3 angularMomentum = Vector3.Cross(position, velocity);

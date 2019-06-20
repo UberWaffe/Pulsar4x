@@ -388,9 +388,9 @@ namespace Pulsar4X.ECSLib
             double myMass = myMVDB.Mass;
 
             // Adjust minDistance
-            double gravAttractionInsiderNumerator = GameConstants.Science.GravitationalConstant * myMass * insideMass;
-            double gravAttractionOutsideNumerator = GameConstants.Science.GravitationalConstant * myMass * outsideMass;
-            double gravAttractionParentNumerator = GameConstants.Science.GravitationalConstant * myMass * parentMass;
+            double gravAttractionInsiderNumerator = GMath.GetGravitationalAttraction(myMass, insideMass, 1);
+            double gravAttractionOutsideNumerator = GMath.GetGravitationalAttraction(myMass, outsideMass, 1);
+            double gravAttractionParentNumerator = GMath.GetGravitationalAttraction(myMass, parentMass, 1);
             double gravAttractionToInsideOrbit = gravAttractionInsiderNumerator / ((minDistance - insideApoapsis) * (minDistance - insideApoapsis));
             double gravAttractionToOutsideOrbit = gravAttractionOutsideNumerator / ((outsidePeriapsis - maxDistance) * (outsidePeriapsis - maxDistance));
             double gravAttractionToParent = gravAttractionParentNumerator / (minDistance * minDistance);

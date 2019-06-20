@@ -90,6 +90,10 @@ namespace Pulsar4X.ECSLib
         {
             return meters / GameConstants.Units.MetersPerAu;
         }
+        public static double MToKm(double meters)
+        {
+            return meters / 1000.0;
+        }
         public static double MToAU(double meters)
         {
             return meters / GameConstants.Units.MetersPerAu;

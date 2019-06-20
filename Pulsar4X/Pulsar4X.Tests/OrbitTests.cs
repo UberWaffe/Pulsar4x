@@ -195,19 +195,19 @@ namespace Pulsar4X.Tests
 			
             // To help visualize vectors, a useful tool at : https://academo.org/demos/3d-vector-plotter/
             // To determine what the Kepler Elements should be, use : http://orbitsimulator.com/formulas/OrbitalElements.html
-            Vector3 position = new Vector3() { X = 0.25, Y = 0.25 };
-            Vector3 velocity = new Vector3() { X = Distance.KmToAU(0), Y = Distance.KmToAU(1) }; //passes
+            Vector3 position = new Vector4() { X = Distance.AuToKm(0.25), Y = Distance.AuToKm(0.25) };
+            Vector3 velocity = new Vector4() { X = 0, Y = 1 }; //passes
             var expectedKeplerResult = new KeplerElements()
             {
-                SemiMajorAxis = Distance.MToAU(26450687774.528255),
+                SemiMajorAxis = Distance.MToKm(26450687774.528255),
                 Eccentricity = 0.9998007596175803,
                 Inclination = Angle.ToRadians(0.0),
-                LongdOfAN = 0.0,
+                LongdOfAN = Angle.ToRadians(0.0),
                 ArgumentOfPeriapsis = Angle.ToRadians(225.01141904591285),
                 MeanAnomalyAtEpoch = Angle.ToRadians(177.71233527026365),
                 TrueAnomalyAtEpoch = Angle.ToRadians(179.98858095408718),
-                Periapsis = Distance.MToAU(5270045.1474609375),
-                Apoapsis = Distance.MToAU(52896105503.90905)
+                Periapsis = Distance.MToKm(5270045.1474609375),
+                Apoapsis = Distance.MToKm(52896105503.90905)
             };
             var calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
             Assert.IsTrue(TestKeplerOrbitSpecificResult(calculatedKepler, expectedKeplerResult));
@@ -216,15 +216,15 @@ namespace Pulsar4X.Tests
             velocity = new Vector3() { X = Distance.KmToAU(0), Y = -Distance.KmToAU(2) }; //fails
             expectedKeplerResult = new KeplerElements()
             {
-                SemiMajorAxis = Distance.MToAU(26466512098.241333),
+                SemiMajorAxis = Distance.MToKm(26466512098.241333),
                 Eccentricity = 0.999203276935673,
                 Inclination = Angle.ToRadians(180.00000000000017),
-                LongdOfAN = 45.00000153199437,
+                LongdOfAN = Angle.ToRadians(45.00000153199437),
                 ArgumentOfPeriapsis = Angle.ToRadians(179.95429650816112),
                 MeanAnomalyAtEpoch = Angle.ToRadians(184.57578603454385),
                 TrueAnomalyAtEpoch = Angle.ToRadians(180.04570350068457),
-                Periapsis = Distance.MToAU(21086480.62095642),
-                Apoapsis = Distance.MToAU(52911937715.861725)
+                Periapsis = Distance.MToKm(21086480.62095642),
+                Apoapsis = Distance.MToKm(52911937715.861725)
             };
             calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
             Assert.IsTrue(TestKeplerOrbitSpecificResult(calculatedKepler, expectedKeplerResult));
@@ -240,27 +240,27 @@ namespace Pulsar4X.Tests
 
         public KeplerElements CalculateKeplerOrbitElements(double parentMass, double objMass, Vector4 position, Vector4 velocity)
         {
-            double sgp = OrbitMath.CalculateStandardGravityParameter(parentMass, objMass);
-            KeplerElements ke = OrbitMath.KeplerFromPositionAndVelocity(sgp, position, velocity, new DateTime());
+            KeplerElements ke = OrbitMath.KeplerFromPositionAndVelocity(parentMass, objMass, position, velocity, new DateTime());
             
             return ke;
         }
 
         public bool TestKeplerOrbitSpecificResult(KeplerElements keplerResults, KeplerElements expectedKeplerResults)
         {
-            var requiredAccuracy = 0.01; //0.0000000001
-            Assert.AreEqual(expectedKeplerResults.SemiMajorAxis, keplerResults.SemiMajorAxis, requiredAccuracy); //a
-            Assert.AreEqual(expectedKeplerResults.Eccentricity, keplerResults.Eccentricity, requiredAccuracy); //e
-            Assert.AreEqual(expectedKeplerResults.Inclination, keplerResults.Inclination, requiredAccuracy); //i
-            Assert.AreEqual(expectedKeplerResults.LongdOfAN, keplerResults.LongdOfAN, requiredAccuracy); //Ω
-            Assert.AreEqual(expectedKeplerResults.ArgumentOfPeriapsis, keplerResults.ArgumentOfPeriapsis, requiredAccuracy); //ω
+            var requiredAccuracyForRadians = 0.01; //0.0000000001
+            var requiredAccuracyForKm = 2.0; //0.001
+            Assert.AreEqual(expectedKeplerResults.SemiMajorAxis, keplerResults.SemiMajorAxis, requiredAccuracyForKm); //a
+            Assert.AreEqual(expectedKeplerResults.Eccentricity, keplerResults.Eccentricity, requiredAccuracyForRadians); //e
+            Assert.AreEqual(expectedKeplerResults.Inclination, keplerResults.Inclination, requiredAccuracyForRadians); //i
+            Assert.AreEqual(expectedKeplerResults.LongdOfAN, keplerResults.LongdOfAN, requiredAccuracyForRadians); //Ω
+            Assert.AreEqual(expectedKeplerResults.ArgumentOfPeriapsis, keplerResults.ArgumentOfPeriapsis, requiredAccuracyForRadians); //ω
             // Assert.AreEqual(expectedKeplerResults.MeanMotion, keplerResults.MeanMotion, requiredAccuracy); //n
-            Assert.AreEqual(expectedKeplerResults.MeanAnomalyAtEpoch, keplerResults.MeanAnomalyAtEpoch, requiredAccuracy); //M0
-            Assert.AreEqual(expectedKeplerResults.TrueAnomalyAtEpoch, keplerResults.TrueAnomalyAtEpoch, requiredAccuracy); //v
-            Assert.AreEqual(expectedKeplerResults.Periapsis, keplerResults.Periapsis, requiredAccuracy); //q
-            Assert.AreEqual(expectedKeplerResults.Apoapsis, keplerResults.Apoapsis, requiredAccuracy); //Q
+            Assert.AreEqual(expectedKeplerResults.MeanAnomalyAtEpoch, keplerResults.MeanAnomalyAtEpoch, requiredAccuracyForRadians); //M0
+            Assert.AreEqual(expectedKeplerResults.TrueAnomalyAtEpoch, keplerResults.TrueAnomalyAtEpoch, requiredAccuracyForRadians); //v
+            Assert.AreEqual(expectedKeplerResults.Periapsis, keplerResults.Periapsis, requiredAccuracyForKm); //q
+            Assert.AreEqual(expectedKeplerResults.Apoapsis, keplerResults.Apoapsis, requiredAccuracyForKm); //Q
 
-            return false;
+            return true;
         }
 
         public void TestOrbitDBFromVectors(double parentMass, double objMass, Vector3 position, Vector3 velocity)

@@ -71,7 +71,7 @@ namespace Pulsar4X.ECSLib
 
                 distanceToParent_m = Math.Max(distanceToParent_m, 0.1); //don't let the distance be 0 (once collision is in this will likely never happen anyway)
 
-                double gravForce = GameConstants.Science.GravitationalConstant * (Mass_Kg * ParentMass_kg / Math.Pow(distanceToParent_m, 2));
+                double gravForce = GMath.GetGravitationalAttraction(Mass_Kg, ParentMass_kg, distanceToParent_m);
                 Vector3 gravForceVector = gravForce * -Vector3.Normalise(positionDB.RelativePosition_AU);
                 double distance = Distance.AuToKm(positionDB.RelativePosition_AU).Length();
                 Vector3 totalForce = gravForceVector + newtonMoveDB.ThrustVector;
