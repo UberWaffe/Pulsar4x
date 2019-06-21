@@ -322,7 +322,7 @@ namespace Pulsar4X.ECSLib
             }
             // Calculate extended parameters.
             // http://en.wikipedia.org/wiki/Standard_gravitational_parameter#Two_bodies_orbiting_each_other
-            GravitationalParameter = OrbitMath.CalculateStandardGravityParameterInKm3S2(_parentMass, _myMass);
+            GravitationalParameter = OrbitMath.CalculateStandardGravityParameterInM3S2(_parentMass, _myMass);
             GravitationalParameterAU = OrbitMath.CalculateStandardGravityParameter(_parentMass, _myMass);
             // http://en.wikipedia.org/wiki/Orbital_period#Two_bodies_orbiting_each_other
             double orbitalPeriod = 2 * Math.PI * Math.Sqrt(Math.Pow(Distance.AuToKm(SemiMajorAxis), 3) / (GravitationalParameter));

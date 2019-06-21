@@ -36,7 +36,7 @@ namespace Pulsar4X.Tests
         {
             double parentMass = 5.97237e24;
             double objMass = 7.342e22;
-            double sgpKm = OrbitMath.CalculateStandardGravityParameterInKm3S2(parentMass, objMass);
+            double sgpKm = OrbitMath.CalculateStandardGravityParameterInM3S2(parentMass, objMass);
             var speedKm = OrbitMath.InstantaneousOrbitalSpeed(sgpKm, 405400, 384399);
             Assert.AreEqual(0.97, speedKm, 0.01);
         }
@@ -71,7 +71,7 @@ namespace Pulsar4X.Tests
 
             Vector3 postionKm = new Vector3() { X = 405400 };
             Vector3 velocityKm = new Vector3() { Y = 0.97 };
-            double sgpKm = OrbitMath.CalculateStandardGravityParameterInKm3S2(parentMass, objMass);
+            double sgpKm = OrbitMath.CalculateStandardGravityParameterInM3S2(parentMass, objMass);
 
             KeplerElements elementsKm = OrbitMath.KeplerFromPositionAndVelocity(sgpKm, postionKm, velocityKm, new DateTime());
 
@@ -220,19 +220,19 @@ namespace Pulsar4X.Tests
 
             // To help visualize vectors, a useful tool at : https://academo.org/demos/3d-vector-plotter/
             // To determine what the Kepler Elements should be, use : http://orbitsimulator.com/formulas/OrbitalElements.html
-            Vector3 position = new Vector3() { X = Distance.AuToKm(0.25), Y = Distance.AuToKm(0.25) };
-            Vector3 velocity = new Vector3() { X = 0, Y = 1 };
+            Vector3 position = new Vector3() { X = Distance.AuToMt(0.25), Y = Distance.AuToMt(0.25) };
+            Vector3 velocity = new Vector3() { X = 0, Y = Distance.KmToM(1) };
             var expectedKeplerResult = new KeplerElements()
             {
-                SemiMajorAxis = Distance.MToKm(26450687774.528255),
-                Eccentricity = 0.9998007596175803,
+                SemiMajorAxis = 26450686605.935268,
+                Eccentricity = 0.99980080384017433,
                 Inclination = Angle.ToRadians(0.0),
                 LongdOfAN = Angle.ToRadians(0.0),
                 ArgumentOfPeriapsis = Angle.ToRadians(225.01141904591285),
                 MeanAnomalyAtEpoch = Angle.ToRadians(177.71233527026365),
                 TrueAnomalyAtEpoch = Angle.ToRadians(179.98858095408718),
-                Periapsis = Distance.MToKm(5270045.1474609375),
-                Apoapsis = Distance.MToKm(52896105503.90905)
+                Periapsis = 5268875.196654466,
+                Apoapsis = 52896104336.673882
             };
             var calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
             Assert.IsTrue(TestKeplerOrbitSpecificResult(calculatedKepler, expectedKeplerResult));
@@ -246,19 +246,19 @@ namespace Pulsar4X.Tests
 
             // To help visualize vectors, a useful tool at : https://academo.org/demos/3d-vector-plotter/
             // To determine what the Kepler Elements should be, use : http://orbitsimulator.com/formulas/OrbitalElements.html
-            Vector3 position = new Vector3() { X = Distance.AuToKm(0.25), Y = Distance.AuToKm(0.25) };
-            Vector3 velocity = new Vector3() { X = 0, Y = -1 };
+            Vector3 position = new Vector3() { X = Distance.AuToMt(0.25), Y = Distance.AuToMt(0.25) };
+            Vector3 velocity = new Vector3() { X = 0, Y = Distance.KmToM(-1) };
             var expectedKeplerResult = new KeplerElements()
             {
-                SemiMajorAxis = Distance.MToKm(26466512098.241333),
+                SemiMajorAxis = 26466512098.241333,
                 Eccentricity = 0.999203276935673,
                 Inclination = Angle.ToRadians(180.00000000000017),
                 LongdOfAN = Angle.ToRadians(45.00000153199437),
                 ArgumentOfPeriapsis = Angle.ToRadians(179.95429650816112),
                 MeanAnomalyAtEpoch = Angle.ToRadians(184.57578603454385),
                 TrueAnomalyAtEpoch = Angle.ToRadians(180.04570350068457),
-                Periapsis = Distance.MToKm(21086480.62095642),
-                Apoapsis = Distance.MToKm(52911937715.861725)
+                Periapsis = 21086480.62095642,
+                Apoapsis = 52911937715.861725
             };
             var calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
             Assert.IsTrue(TestKeplerOrbitSpecificResult(calculatedKepler, expectedKeplerResult));
@@ -272,19 +272,19 @@ namespace Pulsar4X.Tests
 
             // To help visualize vectors, a useful tool at : https://academo.org/demos/3d-vector-plotter/
             // To determine what the Kepler Elements should be, use : http://orbitsimulator.com/formulas/OrbitalElements.html
-            Vector3 position = new Vector3() { X = Distance.AuToKm(0.25), Y = Distance.AuToKm(0.25) };
-            Vector3 velocity = new Vector3() { X = 1, Y = 0 };
+            Vector3 position = new Vector3() { X = Distance.AuToMt(0.25), Y = Distance.AuToMt(0.25) };
+            Vector3 velocity = new Vector3() { X = Distance.KmToM(1), Y = 0 };
             var expectedKeplerResult = new KeplerElements()
             {
-                SemiMajorAxis = Distance.MToKm(26450687774.528263),
+                SemiMajorAxis = 26450687774.528263,
                 Eccentricity = 0.9998007596281745,
                 Inclination = Angle.ToRadians(0),
                 LongdOfAN = Angle.ToRadians(0),
                 ArgumentOfPeriapsis = Angle.ToRadians(225.01142056906158),
                 MeanAnomalyAtEpoch = Angle.ToRadians(177.7123352094565),
                 TrueAnomalyAtEpoch = Angle.ToRadians(179.98858095408733),
-                Periapsis = Distance.MToKm(179.98858095408733),
-                Apoapsis = Distance.MToKm(52896105504.189285)
+                Periapsis = 179.98858095408733,
+                Apoapsis = 52896105504.189285
             };
             var calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
             Assert.IsTrue(TestKeplerOrbitSpecificResult(calculatedKepler, expectedKeplerResult));
@@ -298,19 +298,19 @@ namespace Pulsar4X.Tests
 
             // To help visualize vectors, a useful tool at : https://academo.org/demos/3d-vector-plotter/
             // To determine what the Kepler Elements should be, use : http://orbitsimulator.com/formulas/OrbitalElements.html
-            Vector3 position = new Vector3() { X = Distance.AuToKm(0.25), Y = Distance.AuToKm(0.25) };
-            Vector3 velocity = new Vector3() { X = -1, Y = 0 };
+            Vector3 position = new Vector3() { X = Distance.AuToMt(0.25), Y = Distance.AuToMt(0.25) };
+            Vector3 velocity = new Vector3() { X = Distance.KmToM(-1), Y = 0 };
             var expectedKeplerResult = new KeplerElements()
             {
-                SemiMajorAxis = Distance.MToKm(26450687774.528255),
+                SemiMajorAxis = 26450687774.528255,
                 Eccentricity = 0.9998007596175803,
                 Inclination = Angle.ToRadians(180.00000000000017),
                 LongdOfAN = Angle.ToRadians(45.00000153199437),
                 ArgumentOfPeriapsis = Angle.ToRadians(179.9885809629329),
                 MeanAnomalyAtEpoch = Angle.ToRadians(182.28766472973598),
                 TrueAnomalyAtEpoch = Angle.ToRadians(180.0114190459128),
-                Periapsis = Distance.MToKm(5270045.1474609375),
-                Apoapsis = Distance.MToKm(52896105503.90905)
+                Periapsis = 5270045.1474609375,
+                Apoapsis = 52896105503.90905
             };
             var calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
             Assert.IsTrue(TestKeplerOrbitSpecificResult(calculatedKepler, expectedKeplerResult));
