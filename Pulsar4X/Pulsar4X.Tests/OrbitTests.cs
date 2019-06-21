@@ -177,7 +177,43 @@ namespace Pulsar4X.Tests
         }
 
         [Test]
-        public void CalculateKeplerOrbitElements_When_Calculating_Should_GiveKnownCorrectResults()
+        public void Distance_AuToMt_When_Given1_Should_Give149597870700()
+        {
+            Assert.AreEqual(149597870700d, Distance.AuToMt(1.0d));
+        }
+
+        [Test]
+        public void OrbitMath_CalculateAngularMomentum_When_ZeroXPositiveYVelocity_Should_GiveCorrectResults()
+        {
+            // To determine what the Kepler Elements should be, use : http://orbitsimulator.com/formulas/OrbitalElements.html
+            Vector3 position = new Vector3() { X = Distance.AuToMt(0.25), Y = Distance.AuToMt(0.25) };
+            Vector3 velocity = new Vector3() { X = 0, Y = Distance.KmToM(2) };
+            var expectedResult = new Vector3(
+                0,
+                0,
+                74798935350000.0
+            );
+            var calculatedResult = OrbitMath.CalculateAngularMomentum(position, velocity);
+            Assert.IsTrue(TestVectorsAreEqual(expectedResult, calculatedResult, 1.0d));
+        }
+
+        [Test]
+        public void OrbitMath_CalculateAngularMomentum_When_ZeroXNegativeYVelocity_Should_GiveCorrectResults()
+        {
+            // To determine what the Kepler Elements should be, use : http://orbitsimulator.com/formulas/OrbitalElements.html
+            Vector3 position = new Vector3() { X = Distance.AuToMt(0.25), Y = Distance.AuToMt(0.25) };
+            Vector3 velocity = new Vector3() { X = 0, Y = Distance.KmToM(-1) };
+            var expectedResult = new Vector3(
+                0,
+                0,
+                -37399467675000.0d
+            );
+            var calculatedResult = OrbitMath.CalculateAngularMomentum(position, velocity);
+            Assert.IsTrue(TestVectorsAreEqual(expectedResult, calculatedResult, 1.0d));
+        }
+
+        [Test]
+        public void OrbitMath_KeplerFromPositionAndVelocity_When_ZeroXPositiveYVelocity_Should_GiveCorrectResults()
         {
             double parentMass = 1.989e30;
             double objMass = 10000;
@@ -200,9 +236,19 @@ namespace Pulsar4X.Tests
             };
             var calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
             Assert.IsTrue(TestKeplerOrbitSpecificResult(calculatedKepler, expectedKeplerResult));
+        }
 
-            velocity = new Vector3() { X = Distance.KmToAU(0), Y = -Distance.KmToAU(2) };
-            expectedKeplerResult = new KeplerElements()
+        [Test]
+        public void OrbitMath_KeplerFromPositionAndVelocity_When_ZeroXNegativeYVelocity_Should_GiveCorrectResults()
+        {
+            double parentMass = 1.989e30;
+            double objMass = 10000;
+
+            // To help visualize vectors, a useful tool at : https://academo.org/demos/3d-vector-plotter/
+            // To determine what the Kepler Elements should be, use : http://orbitsimulator.com/formulas/OrbitalElements.html
+            Vector3 position = new Vector3() { X = Distance.AuToKm(0.25), Y = Distance.AuToKm(0.25) };
+            Vector3 velocity = new Vector3() { X = 0, Y = -1 };
+            var expectedKeplerResult = new KeplerElements()
             {
                 SemiMajorAxis = Distance.MToKm(26466512098.241333),
                 Eccentricity = 0.999203276935673,
@@ -214,12 +260,60 @@ namespace Pulsar4X.Tests
                 Periapsis = Distance.MToKm(21086480.62095642),
                 Apoapsis = Distance.MToKm(52911937715.861725)
             };
-            calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
+            var calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
             Assert.IsTrue(TestKeplerOrbitSpecificResult(calculatedKepler, expectedKeplerResult));
+        }
 
-            velocity = new Vector3() { X = Distance.KmToAU(1), Y = Distance.KmToAU(0) };
+        [Test]
+        public void OrbitMath_KeplerFromPositionAndVelocity_When_PositiveXZeroYVelocity_Should_GiveCorrectResults()
+        {
+            double parentMass = 1.989e30;
+            double objMass = 10000;
 
-            velocity = new Vector3() { X = -Distance.KmToAU(1), Y = Distance.KmToAU(0) };
+            // To help visualize vectors, a useful tool at : https://academo.org/demos/3d-vector-plotter/
+            // To determine what the Kepler Elements should be, use : http://orbitsimulator.com/formulas/OrbitalElements.html
+            Vector3 position = new Vector3() { X = Distance.AuToKm(0.25), Y = Distance.AuToKm(0.25) };
+            Vector3 velocity = new Vector3() { X = 1, Y = 0 };
+            var expectedKeplerResult = new KeplerElements()
+            {
+                SemiMajorAxis = Distance.MToKm(26450687774.528263),
+                Eccentricity = 0.9998007596281745,
+                Inclination = Angle.ToRadians(0),
+                LongdOfAN = Angle.ToRadians(0),
+                ArgumentOfPeriapsis = Angle.ToRadians(225.01142056906158),
+                MeanAnomalyAtEpoch = Angle.ToRadians(177.7123352094565),
+                TrueAnomalyAtEpoch = Angle.ToRadians(179.98858095408733),
+                Periapsis = Distance.MToKm(179.98858095408733),
+                Apoapsis = Distance.MToKm(52896105504.189285)
+            };
+            var calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
+            Assert.IsTrue(TestKeplerOrbitSpecificResult(calculatedKepler, expectedKeplerResult));
+        }
+
+        [Test]
+        public void OrbitMath_KeplerFromPositionAndVelocity_When_NegativeXZeroYVelocity_Should_GiveCorrectResults()
+        {
+            double parentMass = 1.989e30;
+            double objMass = 10000;
+
+            // To help visualize vectors, a useful tool at : https://academo.org/demos/3d-vector-plotter/
+            // To determine what the Kepler Elements should be, use : http://orbitsimulator.com/formulas/OrbitalElements.html
+            Vector3 position = new Vector3() { X = Distance.AuToKm(0.25), Y = Distance.AuToKm(0.25) };
+            Vector3 velocity = new Vector3() { X = -1, Y = 0 };
+            var expectedKeplerResult = new KeplerElements()
+            {
+                SemiMajorAxis = Distance.MToKm(26450687774.528255),
+                Eccentricity = 0.9998007596175803,
+                Inclination = Angle.ToRadians(180.00000000000017),
+                LongdOfAN = Angle.ToRadians(45.00000153199437),
+                ArgumentOfPeriapsis = Angle.ToRadians(179.9885809629329),
+                MeanAnomalyAtEpoch = Angle.ToRadians(182.28766472973598),
+                TrueAnomalyAtEpoch = Angle.ToRadians(180.0114190459128),
+                Periapsis = Distance.MToKm(5270045.1474609375),
+                Apoapsis = Distance.MToKm(52896105503.90905)
+            };
+            var calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
+            Assert.IsTrue(TestKeplerOrbitSpecificResult(calculatedKepler, expectedKeplerResult));
         }
 
         [Test]
@@ -268,6 +362,15 @@ namespace Pulsar4X.Tests
             Assert.AreEqual(expectedKeplerResults.TrueAnomalyAtEpoch, keplerResults.TrueAnomalyAtEpoch, requiredAccuracyForRadians); //v
             Assert.AreEqual(expectedKeplerResults.Periapsis, keplerResults.Periapsis, requiredAccuracyForKm); //q
             Assert.AreEqual(expectedKeplerResults.Apoapsis, keplerResults.Apoapsis, requiredAccuracyForKm); //Q
+
+            return true;
+        }
+
+        public bool TestVectorsAreEqual(Vector3 expected, Vector3 actual, double requiredAccuracy = 0.01)
+        {
+            Assert.AreEqual(expected.X, actual.X, requiredAccuracy);
+            Assert.AreEqual(expected.Y, actual.Y, requiredAccuracy);
+            Assert.AreEqual(expected.Z, actual.Z, requiredAccuracy);
 
             return true;
         }

@@ -117,6 +117,10 @@ namespace Pulsar4X.ECSLib
         {
             return meters / 1000.0;
         }
+        public static double KmToM(double kilometers)
+        {
+            return kilometers * 1000.0;
+        }
         public static double MToAU(double meters)
         {
             return meters / GameConstants.Units.MetersPerAu;
