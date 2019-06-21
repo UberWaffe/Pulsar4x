@@ -151,14 +151,6 @@ namespace Pulsar4X.ECSLib
 
         }
 
-        //public static Vector4 GetAbsolutePositionForParabolicOrbit_AU()
-        //{ }
-
-        //public static Vector4 GetAbsolutePositionForHyperbolicOrbit_AU(OrbitDB orbitDB, DateTime time)
-        //{
-            
-        //}
-
         public static double GetTrueAnomaly(OrbitDB orbit, DateTime time)
         {
             TimeSpan timeSinceEpoch = time - orbit.Epoch;

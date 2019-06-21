@@ -69,8 +69,8 @@ namespace Pulsar4X.Tests
             double sgp = OrbitMath.CalculateStandardGravityParameter(parentMass, objMass);
             KeplerElements elements = OrbitMath.KeplerFromPositionAndVelocity(sgp, position, velocity, new DateTime());
 
-            Vector3 postionKm = new Vector4() { X = 405400 };
-            Vector3 velocityKm = new Vector4() { Y = 0.97 };
+            Vector3 postionKm = new Vector3() { X = 405400 };
+            Vector3 velocityKm = new Vector3() { Y = 0.97 };
             double sgpKm = OrbitMath.CalculateStandardGravityParameterInKm3S2(parentMass, objMass);
 
             KeplerElements elementsKm = OrbitMath.KeplerFromPositionAndVelocity(sgpKm, postionKm, velocityKm, new DateTime());
@@ -174,17 +174,6 @@ namespace Pulsar4X.Tests
             velocity = new Vector3() { X = Distance.KmToAU(0), Y = Distance.KmToAU(1) };
             TestOrbitDBFromVectors(parentMass, objMass, position, velocity);
 
-            /*
-            //this is something that is breaking ingame
-            parentMass = 1.989e30;
-            objMass = 10000;
-            position = new Vector4() { X = -0.208994076275941, Y = 0.955838328099748 };
-            velocity = new Vector4() { X = -2.1678187689294E-07, Y = -7.93096769486992E-08};
-            TestOrbitDBFromVectors(parentMass, objMass, position, velocity);
-            */
-
-
-
         }
 
         [Test]
@@ -195,8 +184,8 @@ namespace Pulsar4X.Tests
 			
             // To help visualize vectors, a useful tool at : https://academo.org/demos/3d-vector-plotter/
             // To determine what the Kepler Elements should be, use : http://orbitsimulator.com/formulas/OrbitalElements.html
-            Vector3 position = new Vector4() { X = Distance.AuToKm(0.25), Y = Distance.AuToKm(0.25) };
-            Vector3 velocity = new Vector4() { X = 0, Y = 1 }; //passes
+            Vector3 position = new Vector3() { X = Distance.AuToKm(0.25), Y = Distance.AuToKm(0.25) };
+            Vector3 velocity = new Vector3() { X = 0, Y = 1 }; //passes
             var expectedKeplerResult = new KeplerElements()
             {
                 SemiMajorAxis = Distance.MToKm(26450687774.528255),
@@ -238,7 +227,7 @@ namespace Pulsar4X.Tests
 
         }
 
-        public KeplerElements CalculateKeplerOrbitElements(double parentMass, double objMass, Vector4 position, Vector4 velocity)
+        public KeplerElements CalculateKeplerOrbitElements(double parentMass, double objMass, Vector3 position, Vector3 velocity)
         {
             KeplerElements ke = OrbitMath.KeplerFromPositionAndVelocity(parentMass, objMass, position, velocity, new DateTime());
             

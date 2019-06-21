@@ -57,25 +57,21 @@ namespace Pulsar4X.ECSLib
 
     public static class CircleCalculations
     {
-        public static Vector4 GetPositionOnCircle(Vector4 centerPosition, float radius, float angle)
+        public static Vector2 GetPositionOnCircle(Vector2 centerPosition, float radius, float angle)
         {
-            Vector4 relativePosition = new Vector4(
+            Vector2 relativePosition = new Vector2(
                 (centerPosition.X + radius * Math.Cos(Angle.ToRadians(angle))),
-                (centerPosition.Y + radius * Math.Sin(Angle.ToRadians(angle))),
-                0,
-                0
+                (centerPosition.Y + radius * Math.Sin(Angle.ToRadians(angle)))
             );
 
             return relativePosition;
         }
 
-        public static Vector4 GetCenterOfCircle(Vector4 relativePosition, float radius, float angle)
+        public static Vector2 GetCenterOfCircle(Vector2 relativePosition, float radius, float angle)
         {
-            Vector4 relativeCircleCenter = new Vector4(
+            Vector2 relativeCircleCenter = new Vector2(
                 (relativePosition.X - radius * Math.Cos(Angle.ToRadians(angle))),
-                (relativePosition.Y - radius * Math.Sin(Angle.ToRadians(angle))),
-                0,
-                0
+                (relativePosition.Y - radius * Math.Sin(Angle.ToRadians(angle)))
             );
 
             return relativeCircleCenter;
@@ -730,98 +726,6 @@ namespace Pulsar4X.ECSLib
             var spd1 = Distance.MToAU(spd);
             return GetInterceptPosition2(moverPos, spd1, targetOrbit, atDateTime, offsetPosition);
         }
-
-        /*
-        /// <summary>
-        /// Calculates a cartisian position for an intercept for a ship and an target's orbit using non newtownion movement. 
-        /// </summary>
-        /// <returns>The intercept position, and DateTime</returns>
-        /// <param name="moverPos">Mover position.</param>
-        /// <param name="speed">NonNewtonion movement speed. in ??? maybe this is where I'm bugged</param>
-        /// <param name="targetOrbit">Target orbit.</param>
-        /// <param name="atDateTime">transit start time</param>
-        public static (Vector4, DateTime) GetInterceptPosition(Vector4 moverPos, double speed, OrbitDB targetOrbit, DateTime atDateTime)
-        {
-#if DEBUG
-            var timespent = Stopwatch.StartNew();
-#endif
-
-            double transitTime1 = 0;
-
-            TimeSpan orbitalPeriod = targetOrbit.OrbitalPeriod;
-            int i1 = 0, i2 = 0, i3 = 0;
-            Vector4 workingPosition = new Vector4();
-            double timePeriod = 0;
-            double transitTime2;
-            double deltaTime = orbitalPeriod.TotalSeconds * 0.01;
-            double a0;
-            double a1 = -1;
-
-            //find coarse intercept
-            while (timePeriod < orbitalPeriod.TotalSeconds)
-            {
-                workingPosition = Distance.AuToMt(OrbitProcessor.GetAbsolutePosition_AU(targetOrbit, atDateTime + TimeSpan.FromSeconds(timePeriod)));
-                transitTime2 = (workingPosition - moverPos).Length() / speed;
-                a0 = transitTime2 - timePeriod;
-                if (a0 > 0.0) //ignore overshoots, only do undershoots. 
-                {
-                    a0 /= orbitalPeriod.TotalSeconds; //remove full periods from the difference
-                    a0 -= Math.Floor(a0);
-                    a0 *= orbitalPeriod.TotalSeconds;
-                    if (a0 < a1 || a1 < 0)
-                    {
-                        a1 = a0;
-                        transitTime1 = transitTime2;
-                    }
-
-                }
-                timePeriod += deltaTime;
-                i1++;
-            }
-#if DEBUG
-            Console.WriteLine("CoarseTimeSpan :" + TimeSpan.FromSeconds(transitTime1));
-#endif
-            //find finer intercept;
-            for (i2 = 0; i2 < 3; i2++)
-            {
-                a1 = -1.0;
-
-                timePeriod = transitTime1 - deltaTime;
-                deltaTime *= 0.1;
-
-                while (timePeriod < orbitalPeriod.TotalSeconds)
-                {
-                    workingPosition = Distance.AuToMt(OrbitProcessor.GetAbsolutePosition_AU(targetOrbit, atDateTime + TimeSpan.FromSeconds(timePeriod)));
-                    transitTime2 = (workingPosition - moverPos).Length() / speed;
-                    a0 = transitTime2 - timePeriod;
-                    if (a0 > 0.0)
-                    {
-                        a0 /= orbitalPeriod.TotalSeconds;
-                        a0 -= Math.Floor(a0);
-                        a0 *= orbitalPeriod.TotalSeconds;
-                        if (a0 < a1 || a1 < 0)
-                        {
-                            a1 = a0;
-                            transitTime1 = transitTime2;
-                        }
-
-                    }
-                    timePeriod += deltaTime;
-                    i3++;
-                }
-                workingPosition = Distance.AuToMt(OrbitProcessor.GetAbsolutePosition_AU(targetOrbit, atDateTime + TimeSpan.FromSeconds(transitTime1)));
-#if DEBUG
-                Console.WriteLine("FineTimeSpan #" + i2 + " : " + TimeSpan.FromSeconds(transitTime1));
-#endif
-            }
-#if DEBUG
-            timespent.Stop();
-            Console.WriteLine("Intercept Calc Steps: " + i1 + i3 + " TimeSpent: " + timespent.Elapsed.TotalMilliseconds + " ms");
-#endif      
-            var finalPostion = Distance.MtToAu(workingPosition);
-            return (finalPostion, atDateTime + TimeSpan.FromSeconds(transitTime1));
-        }
-        */
 
         struct obit
         {

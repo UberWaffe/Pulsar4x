@@ -134,18 +134,18 @@ namespace Pulsar4X.ECSLib
         }
 
         #region Vector Calculations
-        public static Vector4 CalculateAngularMomentum(Vector4 position, Vector4 velocity)
+        public static Vector3 CalculateAngularMomentum(Vector3 position, Vector3 velocity)
         {
             /*
             * position vector       km
             * velocity              km/sec
             */
-            return Vector4.Cross(position, velocity);
+            return Vector3.Cross(position, velocity);
         }
 
-        public static Vector4 CalculateNode(Vector4 angularVelocity)
+        public static Vector3 CalculateNode(Vector3 angularVelocity)
         {
-            return Vector4.Cross(new Vector4(0, 0, 1, 0), angularVelocity);
+            return Vector3.Cross(new Vector3(0, 0, 1), angularVelocity);
         }
 
         public static double CalculateStandardGravityParameter(double orbiterMassInKg, double bodyBeingOrbitedMassInKg)

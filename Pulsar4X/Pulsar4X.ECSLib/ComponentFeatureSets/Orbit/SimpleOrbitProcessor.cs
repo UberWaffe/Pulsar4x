@@ -13,7 +13,7 @@ namespace Pulsar4X.ECSLib.ComponentFeatureSets.Orbit
     /// </summary>
     public class SimpleOrbitProcessor
     {
-        public Vector4 CalculatePositionChangeInReferenceToParent(Vector4 currentPosition, double orbitRadiusInKm, double orbitAngularVelocityInRadiansPerSeconds, double startingRelativeAngleInRadians, TimeSpan timeDelta)
+        public Vector3 CalculatePositionChangeInReferenceToParent(Vector3 currentPosition, double orbitRadiusInKm, double orbitAngularVelocityInRadiansPerSeconds, double startingRelativeAngleInRadians, TimeSpan timeDelta)
         {
             var totalSecondsDelta = timeDelta.TotalSeconds;
             var totalAngleChange = orbitAngularVelocityInRadiansPerSeconds * totalSecondsDelta;

@@ -124,7 +124,6 @@ namespace Pulsar4X.ECSLib
             StorageSpaceProcessor.AddCargo(gunShipClass.GetDataBlob<CargoStorageDB>(), fuel, 200000000000);
             //give the gunship a hypobolic orbit to test:
             var velInAU = Distance.KmToAU(25);
-            //var orbit = OrbitDB.FromVector(earth, gunShip, new Vector4(0, velInAU, 0, 0), game.CurrentDateTime);
             gunShip.RemoveDataBlob<OrbitDB>();
             var nmdb = new NewtonMoveDB(earth)
             {
@@ -140,16 +139,6 @@ namespace Pulsar4X.ECSLib
             solSys.SetDataBlob(gunShip.ID, new TransitableDB());
             solSys.SetDataBlob(courier.ID, new TransitableDB());
 
-            //Entity ship = ShipFactory.CreateShip(shipClass, sol.SystemManager, factionEntity, position, sol, "Serial Peacemaker");
-            //ship.SetDataBlob(earth.GetDataBlob<PositionDB>()); //first ship reference PositionDB
-
-            //Entity ship3 = ShipFactory.CreateShip(shipClass, sol.SystemManager, factionEntity, position, sol, "Contiual Pacifier");
-            //ship3.SetDataBlob((OrbitDB)earth.GetDataBlob<OrbitDB>().Clone());//second ship clone earth OrbitDB
-
-
-            //sol.SystemManager.SetDataBlob(ship.ID, new TransitableDB());
-
-            //Entity rock = AsteroidFactory.CreateAsteroid2(sol, earth, game.CurrentDateTime + TimeSpan.FromDays(365));
             Entity rock = AsteroidFactory.CreateAsteroid3(solSys, earth, StaticRefLib.CurrentDateTime + TimeSpan.FromDays(365));
 
             var entitiesWithSensors = solSys.GetAllEntitiesWithDataBlob<SensorReceverAtbDB>();

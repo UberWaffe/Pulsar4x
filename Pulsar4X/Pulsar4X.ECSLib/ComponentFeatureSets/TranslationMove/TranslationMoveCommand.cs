@@ -12,7 +12,6 @@ namespace Pulsar4X.ECSLib
         [JsonProperty]
         public Guid TargetEntityGuid { get; set; }
 
-        //public Vector4 TargetPosition { get; set; }
         private Entity _targetEntity;
 
         public double RangeInKM { get; set; }

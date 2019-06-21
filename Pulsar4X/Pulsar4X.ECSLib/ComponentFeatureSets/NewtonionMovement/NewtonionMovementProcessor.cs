@@ -81,7 +81,6 @@ namespace Pulsar4X.ECSLib
 
                 newtonMoveDB.CurrentVector_kms = newVelocity;
                 Vector3 deltaPos = (newtonMoveDB.CurrentVector_kms + newVelocity) / 2 * timeStep;
-                //Vector4 deltaPos = newtonMoveDB.CurrentVector_kms * timeStep;
 
                 positionDB.RelativePosition_AU += Distance.KmToAU(deltaPos);
 
