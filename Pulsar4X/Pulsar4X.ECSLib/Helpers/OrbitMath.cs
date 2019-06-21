@@ -95,16 +95,8 @@ namespace Pulsar4X.ECSLib
   
             if (double.IsNaN(inclination))
                 inclination = 0;
-
-            double loANlen = nodeVector.X / nodeVector.Length();
-            double longdOfAN = 0;
-            if (double.IsNaN(loANlen))
-                loANlen = 0;
-            else
-                loANlen = GMath.Clamp(loANlen, -1, 1);
-            if(loANlen != 0)
-                longdOfAN = Math.Acos(loANlen); //RAAN or LoAN or Ω
-                
+            
+            double longdOfAN = CalculateLongitudeOfAscendingNode(nodeVector);
 
             double eccentricAnomoly = GetEccentricAnomalyFromStateVectors2(standardGravParam, semiMajorAxis, position, velocity);
 
@@ -162,6 +154,26 @@ namespace Pulsar4X.ECSLib
             // https://en.wikipedia.org/wiki/Standard_gravitational_parameter
             double sgpInM3S2 = GameConstants.Science.GravitationalConstant * (bodyBeingOrbitedMassInKg + orbiterMassInKg);
             return sgpInM3S2;
+        }
+
+        /// <summary>
+        /// In calculation this is referred to as RAAN or LoAN or Ω
+        /// </summary>
+        /// <param name="nodeVector">The node vector of the Kepler elements</param>
+        /// <returns>Radians as a double</returns>
+        public static double CalculateLongitudeOfAscendingNode(Vector3 nodeVector)
+        {
+            double longitudeOfAscendingNodeLength = nodeVector.X / nodeVector.Length();
+            if (double.IsNaN(longitudeOfAscendingNodeLength))
+                longitudeOfAscendingNodeLength = 0;
+            else
+                longitudeOfAscendingNodeLength = GMath.Clamp(longitudeOfAscendingNodeLength, -1, 1);
+
+            double longitudeOfAscendingNode = 0;
+            if (longitudeOfAscendingNodeLength != 0)
+                longitudeOfAscendingNode = Math.Acos(longitudeOfAscendingNodeLength);
+
+            return longitudeOfAscendingNode;
         }
         #endregion
 
