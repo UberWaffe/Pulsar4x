@@ -87,6 +87,12 @@ namespace Pulsar4X.ECSLib
             get { return new Vector3(0,0,1); }
         }
 
+        public static Vector3 Vector3FromDecimals(decimal x, decimal y, decimal z)
+        {
+            var newVector = new Vector3((double)x, (double)y, (double)z);
+            return newVector;
+        }
+
         #endregion
 
         #region Methods

@@ -41,7 +41,7 @@ namespace Pulsar4X.ECSLib
         /// <param name="parentMass">Mass of the parent object (kg)</param>
         /// <param name="objMass">Mass of the orbiting object object (kg)</param>
         /// <param name="position">Position ralitive to parent (Km)</param>
-        /// <param name="velocity">Velocity ralitive to parent (Km)</param>
+        /// <param name="velocity">Velocity ralitive to parent (Km/s)</param>
         public static KeplerElements KeplerFromPositionAndVelocity(double parentMass, double objMass, Vector3 position, Vector3 velocity, DateTime epoch)
         {
             double standardGravParam = OrbitMath.CalculateStandardGravityParameterInKm3S2(parentMass, objMass);
@@ -55,7 +55,7 @@ namespace Pulsar4X.ECSLib
         /// <returns>a struct of Kepler elements.</returns>
         /// <param name="standardGravParam">Standard grav parameter.</param>
         /// <param name="position">Position ralitive to parent (Km)</param>
-        /// <param name="velocity">Velocity ralitive to parent (Km)</param>
+        /// <param name="velocity">Velocity ralitive to parent (Km/s)</param>
         public static KeplerElements KeplerFromPositionAndVelocity(double standardGravParam, Vector3 position, Vector3 velocity, DateTime epoch)
         {
             KeplerElements ke = new KeplerElements();
@@ -66,7 +66,8 @@ namespace Pulsar4X.ECSLib
             Vector3 eccentVector = EccentricityVector(standardGravParam, position, velocity);
             double eccentricity = eccentVector.Length();
 
-            double specificOrbitalEnergy = Math.Pow(velocity.Length(),2) * 0.5 - standardGravParam / position.Length();
+            decimal preciseVelocity = (decimal)velocity.Length();
+            double specificOrbitalEnergy = (double)(preciseVelocity * preciseVelocity * 0.5M - (decimal)standardGravParam / (decimal)position.Length());
 
 
             double semiMajorAxis;
@@ -140,12 +141,14 @@ namespace Pulsar4X.ECSLib
             * position vector       km
             * velocity              km/sec
             */
-            return Vector3.Cross(position, velocity);
+            var (X, Y, Z) = Vector3.CrossPrecise(position, velocity);
+            return Vector3.Vector3FromDecimals(X, Y, Z);
         }
 
         public static Vector3 CalculateNode(Vector3 angularVelocity)
         {
-            return Vector3.Cross(new Vector3(0, 0, 1), angularVelocity);
+            var (X, Y, Z) = Vector3.CrossPrecise(new Vector3(0, 0, 1), angularVelocity);
+            return Vector3.Vector3FromDecimals(X, Y, Z);
         }
 
         public static double CalculateStandardGravityParameter(double orbiterMassInKg, double bodyBeingOrbitedMassInKg)

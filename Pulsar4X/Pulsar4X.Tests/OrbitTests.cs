@@ -177,15 +177,15 @@ namespace Pulsar4X.Tests
         }
 
         [Test]
-        public void FailingOrbitsFromVectorTests()
+        public void CalculateKeplerOrbitElements_When_Calculating_Should_GiveKnownCorrectResults()
         {
             double parentMass = 1.989e30;
             double objMass = 10000;
-			
+
             // To help visualize vectors, a useful tool at : https://academo.org/demos/3d-vector-plotter/
             // To determine what the Kepler Elements should be, use : http://orbitsimulator.com/formulas/OrbitalElements.html
             Vector3 position = new Vector3() { X = Distance.AuToKm(0.25), Y = Distance.AuToKm(0.25) };
-            Vector3 velocity = new Vector3() { X = 0, Y = 1 }; //passes
+            Vector3 velocity = new Vector3() { X = 0, Y = 1 };
             var expectedKeplerResult = new KeplerElements()
             {
                 SemiMajorAxis = Distance.MToKm(26450687774.528255),
@@ -200,9 +200,8 @@ namespace Pulsar4X.Tests
             };
             var calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
             Assert.IsTrue(TestKeplerOrbitSpecificResult(calculatedKepler, expectedKeplerResult));
-            TestOrbitDBFromVectors(parentMass, objMass, position, velocity);
 
-            velocity = new Vector3() { X = Distance.KmToAU(0), Y = -Distance.KmToAU(2) }; //fails
+            velocity = new Vector3() { X = Distance.KmToAU(0), Y = -Distance.KmToAU(2) };
             expectedKeplerResult = new KeplerElements()
             {
                 SemiMajorAxis = Distance.MToKm(26466512098.241333),
@@ -217,6 +216,27 @@ namespace Pulsar4X.Tests
             };
             calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
             Assert.IsTrue(TestKeplerOrbitSpecificResult(calculatedKepler, expectedKeplerResult));
+
+            velocity = new Vector3() { X = Distance.KmToAU(1), Y = Distance.KmToAU(0) };
+
+            velocity = new Vector3() { X = -Distance.KmToAU(1), Y = Distance.KmToAU(0) };
+        }
+
+        [Test]
+        public void FailingOrbitsFromVectorTests()
+        {
+            double parentMass = 1.989e30;
+            double objMass = 10000;
+			
+            // To help visualize vectors, a useful tool at : https://academo.org/demos/3d-vector-plotter/
+            // To determine what the Kepler Elements should be, use : http://orbitsimulator.com/formulas/OrbitalElements.html
+            Vector3 position = new Vector3() { X = Distance.AuToKm(0.25), Y = Distance.AuToKm(0.25) };
+            Vector3 velocity = new Vector3() { X = 0, Y = 1 }; //passes
+            var calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
+            TestOrbitDBFromVectors(parentMass, objMass, position, velocity);
+
+            velocity = new Vector3() { X = Distance.KmToAU(0), Y = -Distance.KmToAU(2) }; //fails
+            calculatedKepler = CalculateKeplerOrbitElements(parentMass, objMass, position, velocity);
             TestOrbitDBFromVectors(parentMass, objMass, position, velocity);
 
             velocity = new Vector3() { X = Distance.KmToAU(1), Y = Distance.KmToAU(0) }; //fails
