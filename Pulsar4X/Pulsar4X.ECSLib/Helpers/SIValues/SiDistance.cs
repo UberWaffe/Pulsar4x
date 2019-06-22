@@ -10,11 +10,10 @@ namespace Pulsar4X.ECSLib.Helpers.SIValues
     {
         private double _distanceInMeters;
 
-        public DistanceEngUnits Units { get; private set; }
+        public DistanceEngUnits SiUnit { get { return DistanceEngUnits.Meters; } }
 
         public SiDistance(double value, DistanceEngUnits units)
         {
-            Units = units;
             _distanceInMeters = Conversion(value, units);
         }
 

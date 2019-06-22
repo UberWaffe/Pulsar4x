@@ -10,11 +10,10 @@ namespace Pulsar4X.ECSLib.Helpers.SIValues
     {
         private double _angleRadians;
 
-        public AngleEngUnits Units { get; private set; }
+        public AngleEngUnits SiUnit { get { return AngleEngUnits.Radians; } }
 
         public SiAngle(double value, AngleEngUnits units)
         {
-            Units = units;
             _angleRadians = Conversion(value, units);
         }
 
