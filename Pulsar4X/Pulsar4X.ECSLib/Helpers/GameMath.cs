@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using Pulsar4X.ECSLib.Helpers.SIValues;
 using Pulsar4X.Vectors;
 
 namespace Pulsar4X.ECSLib
@@ -57,21 +58,21 @@ namespace Pulsar4X.ECSLib
 
     public static class CircleCalculations
     {
-        public static Vector2 GetPositionOnCircle(Vector2 centerPosition, float radius, float angle)
+        public static Vector2 GetPositionOnCircle(Vector2 centerPosition, SiDistance radius, SiAngle angle)
         {
             Vector2 relativePosition = new Vector2(
-                (centerPosition.X + radius * Math.Cos(Angle.ToRadians(angle))),
-                (centerPosition.Y + radius * Math.Sin(Angle.ToRadians(angle)))
+                (centerPosition.X + radius.GetMeters() * Math.Cos(angle.GetRadians())),
+                (centerPosition.Y + radius.GetMeters() * Math.Sin(angle.GetRadians()))
             );
 
             return relativePosition;
         }
 
-        public static Vector2 GetCenterOfCircle(Vector2 relativePosition, float radius, float angle)
+        public static Vector2 GetCenterOfCircle(Vector2 relativePosition, SiDistance radius, SiAngle angle)
         {
             Vector2 relativeCircleCenter = new Vector2(
-                (relativePosition.X - radius * Math.Cos(Angle.ToRadians(angle))),
-                (relativePosition.Y - radius * Math.Sin(Angle.ToRadians(angle)))
+                (relativePosition.X - radius.GetMeters() * Math.Cos(angle.GetRadians())),
+                (relativePosition.Y - radius.GetMeters() * Math.Sin(angle.GetRadians()))
             );
 
             return relativeCircleCenter;

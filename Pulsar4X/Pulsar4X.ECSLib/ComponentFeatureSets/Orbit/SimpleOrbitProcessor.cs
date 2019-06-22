@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Pulsar4X.ECSLib.Helpers.SIValues;
+using Pulsar4X.Vectors;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,16 +15,18 @@ namespace Pulsar4X.ECSLib.ComponentFeatureSets.Orbit
     /// </summary>
     public class SimpleOrbitProcessor
     {
-        public Vector3 CalculatePositionChangeInReferenceToParent(Vector3 currentPosition, double orbitRadiusInKm, double orbitAngularVelocityInRadiansPerSeconds, double startingRelativeAngleInRadians, TimeSpan timeDelta)
+        public Vector3 CalculatePositionChangeInReferenceToParent(Vector3 currentPosition, SiDistance orbitRadiusInKm, SiAngle orbitAngularVelocityInRadiansPerSeconds, SiAngle startingRelativeAngleInRadians, TimeSpan timeDelta)
         {
             var totalSecondsDelta = timeDelta.TotalSeconds;
-            var totalAngleChange = orbitAngularVelocityInRadiansPerSeconds * totalSecondsDelta;
-            var finalRelativeAngle = Angle.NormaliseRadians(startingRelativeAngleInRadians + totalAngleChange);
+            var totalAngleChange = orbitAngularVelocityInRadiansPerSeconds.GetRadians() * totalSecondsDelta;
+            var finalRelativeAngle = Angle.NormaliseRadians(startingRelativeAngleInRadians.GetRadians() + totalAngleChange);
 
-            var newPosition = currentPosition;
+            var circleCenter = CircleCalculations.GetCenterOfCircle(new Vector2(currentPosition.X, currentPosition.Z), orbitRadiusInKm, startingRelativeAngleInRadians);
+            var newPointOnCircle = CircleCalculations.GetPositionOnCircle(circleCenter, orbitRadiusInKm, new SiAngle(finalRelativeAngle, AngleEngUnits.Radians));
 
+            var newPosition = circleCenter + newPointOnCircle;
 
-            return newPosition;
+            return new Vector3(newPosition.X, newPosition.Y, currentPosition.Z);
         }
     }
 }
