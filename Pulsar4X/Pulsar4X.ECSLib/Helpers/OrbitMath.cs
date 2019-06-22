@@ -96,7 +96,7 @@ namespace Pulsar4X.ECSLib
             if (double.IsNaN(inclination))
                 inclination = 0;
             
-            double longdOfAN = CalculateLongitudeOfAscendingNode(nodeVector);
+            double longdOfAN = CalculateLongitudeOfAscendingNode(nodeVector, inclination);
 
             double eccentricAnomoly = GetEccentricAnomalyFromStateVectors2(standardGravParam, semiMajorAxis, position, velocity);
 
@@ -161,19 +161,25 @@ namespace Pulsar4X.ECSLib
         /// </summary>
         /// <param name="nodeVector">The node vector of the Kepler elements</param>
         /// <returns>Radians as a double</returns>
-        public static double CalculateLongitudeOfAscendingNode(Vector3 nodeVector)
+        public static double CalculateLongitudeOfAscendingNode(Vector3 nodeVector, double inclination)
         {
+            var nearZeroInclination = 0.00001d;
+            if (Math.Abs(inclination) < nearZeroInclination)
+            {
+                return 0.0d;
+            }
+
             double longitudeOfAscendingNodeLength = nodeVector.X / nodeVector.Length();
             if (double.IsNaN(longitudeOfAscendingNodeLength))
                 longitudeOfAscendingNodeLength = 0;
-            else
-                longitudeOfAscendingNodeLength = GMath.Clamp(longitudeOfAscendingNodeLength, -1, 1);
 
-            double longitudeOfAscendingNode = 0;
-            if (longitudeOfAscendingNodeLength != 0)
-                longitudeOfAscendingNode = Math.Acos(longitudeOfAscendingNodeLength);
+            double longitudeOfAscendingNode = Math.Acos(longitudeOfAscendingNodeLength);
+
+            if (nodeVector.Y < 0)
+                longitudeOfAscendingNode = 2 * Math.PI - longitudeOfAscendingNode;
 
             return longitudeOfAscendingNode;
+            
         }
         #endregion
 

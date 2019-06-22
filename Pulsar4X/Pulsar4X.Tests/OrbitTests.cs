@@ -213,27 +213,15 @@ namespace Pulsar4X.Tests
         }
 
         [Test]
-        public void OrbitMath_CalculateLongitudeOfAscendingNode_When_APositiveNodeVector_Should_GiveCorrectResult()
+        public void OrbitMath_CalculateLongitudeOfAscendingNode_When_NodeVectorIsNotInclined_Should_GiveZero()
         {
             var nodeVector = new Vector3(
                 0,
                 0,
                 37399467675000.0d
             );
-            var calculatedResult = OrbitMath.CalculateLongitudeOfAscendingNode(nodeVector);
+            var calculatedResult = OrbitMath.CalculateLongitudeOfAscendingNode(nodeVector, 0.0d);
             Assert.AreEqual(0, calculatedResult, 0.000000001d);
-        }
-
-        [Test]
-        public void OrbitMath_CalculateLongitudeOfAscendingNode_When_ANegativeNodeVector_Should_GiveCorrectResult()
-        {
-            var nodeVector = new Vector3(
-                0,
-                0,
-                -37399467675000.0d
-            );
-            var calculatedResult = OrbitMath.CalculateLongitudeOfAscendingNode(nodeVector);
-            Assert.AreEqual(0.7853981767666225d, calculatedResult, 0.000000001d);
         }
 
         [Test]
